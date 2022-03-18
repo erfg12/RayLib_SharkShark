@@ -4,20 +4,45 @@
 const int screenWidth = 800;
 const int screenHeight = 450;
 
-Vector2 sharkPosition;
+typedef struct Shark {
+    Vector2 origin;
+    Vector2 position;
+    Vector2 objective;
+    Vector2 speed;
+
+    bool active;
+} Shark;
+
 Vector2 playerPosition;
 int SkippedFrames = 0;
+Shark mrShark;
 
 void SharkRoam() {
-    sharkPosition.x--;
+    if (mrShark.active)
+    {
+        float module;
+        float sideX;
+        float sideY;
+
+        mrShark.objective = playerPosition;
+
+        // Calculate speed
+        module = sqrt(pow(mrShark.objective.x - mrShark.origin.x, 2) + pow(mrShark.objective.y - mrShark.origin.y, 2));
+
+        sideX = (mrShark.objective.x - mrShark.origin.x) * 10/module;
+        sideY = (mrShark.objective.y - mrShark.origin.y) * 10/module;
+
+        mrShark.speed = (Vector2){ sideX, sideY };
+    }
 }
 
 void SetVars() {
     playerPosition.x = (float)screenWidth / 2;
     playerPosition.y = (float)screenHeight / 2;
 
-    sharkPosition.x = (float)screenWidth - 20;
-    sharkPosition.y = 20;
+    mrShark.origin = (Vector2){0,0};
+    mrShark.position = (Vector2){ 0,0 };
+    mrShark.active = true;
 }
 
 int main(void)
@@ -41,28 +66,28 @@ int main(void)
         if (IsKeyDown(KEY_DOWN) && playerPosition.y < screenHeight) playerPosition.y += 2.0f;
 
         struct Rectangle playerRec = { playerPosition.x, playerPosition.y, 20, 15 };
-        struct Rectangle sharkRec = { sharkPosition.x, sharkPosition.y, 50, 30 };
+        //struct Rectangle sharkRec = { sharkPosition.x, sharkPosition.y, 50, 30 };
 
         //printf("DEBUG: player coords x:%f y:%f\n", ballPosition.x, ballPosition.y);
         //----------------------------------------------------------------------------------
         
-        if (SkippedFrames >= 2) {
+        //if (SkippedFrames >= 2) {
             SharkRoam();
-            SkippedFrames = 0;
-        }
-        SkippedFrames++;
+        //    SkippedFrames = 0;
+        //}
+        //SkippedFrames++;
         // Draw
         //----------------------------------------------------------------------------------
         BeginDrawing();
 
             ClearBackground(BLUE);
 
-            if (CheckCollisionRecs(playerRec, sharkRec)) {
+            /*if (CheckCollisionRecs(playerRec, mrShark.position)) {
                 DrawText("GAME OVER!", screenWidth / 2, screenHeight / 2, 20, RED);
-            }
+            }*/
 
             DrawRectangle(playerPosition.x, playerPosition.y, 20, 15, YELLOW);
-            DrawRectangle(sharkPosition.x, sharkPosition.y, 50, 30, BLACK);
+            DrawRectangle(mrShark.position.x, mrShark.position.y, 50, 30, BLACK);
 
         EndDrawing();
         //----------------------------------------------------------------------------------
