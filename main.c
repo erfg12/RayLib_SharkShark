@@ -20,19 +20,12 @@ Shark mrShark;
 void SharkRoam() {
     if (mrShark.active)
     {
-        float module;
-        float sideX;
-        float sideY;
-
         mrShark.objective = playerPosition;
 
-        // Calculate speed
-        module = sqrt(pow(mrShark.objective.x - mrShark.origin.x, 2) + pow(mrShark.objective.y - mrShark.origin.y, 2));
+        mrShark.position.x += mrShark.speed.x;
+        mrShark.position.y += mrShark.speed.y;
 
-        sideX = (mrShark.objective.x - mrShark.origin.x) * 10/module;
-        sideY = (mrShark.objective.y - mrShark.origin.y) * 10/module;
-
-        mrShark.speed = (Vector2){ sideX, sideY };
+        printf("DEBUG: shark coords x:%f y:%f sx:%f sy:%f\n", mrShark.position.x, mrShark.position.y, mrShark.speed.x, mrShark.speed.y);
     }
 }
 
@@ -40,9 +33,25 @@ void SetVars() {
     playerPosition.x = (float)screenWidth / 2;
     playerPosition.y = (float)screenHeight / 2;
 
-    mrShark.origin = (Vector2){0,0};
-    mrShark.position = (Vector2){ 0,0 };
+    mrShark.origin = (Vector2){ (float)screenWidth - 20, 20 };
+    mrShark.position = (Vector2){ (float)screenWidth - 20, 20 };
     mrShark.active = true;
+
+    mrShark.objective = playerPosition;
+
+    float sideX;
+    float sideY;
+    float module;
+    module = sqrt(pow(mrShark.objective.x - mrShark.origin.x, 2) +
+        pow(mrShark.objective.y - mrShark.origin.y, 2));
+
+    sideX = (mrShark.objective.x - mrShark.origin.x)*10/module;
+    sideY = (mrShark.objective.y - mrShark.origin.y)*10/module;
+
+    mrShark.speed = (Vector2){ sideX, sideY };
+
+    printf("DEBUG: SETTING shark coords x:%f y:%f sx:%f sy:%f\n", mrShark.position.x, mrShark.position.y, mrShark.speed.x, mrShark.speed.y);
+    printf("DEBUG: SETTING player coords x:%f y:%f\n", playerPosition.x, playerPosition.y);
 }
 
 int main(void)
