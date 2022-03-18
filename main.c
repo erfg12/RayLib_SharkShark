@@ -1,4 +1,3 @@
-
 #include "raylib.h"
 #include <stdio.h>
 
@@ -6,7 +5,7 @@ const int screenWidth = 800;
 const int screenHeight = 450;
 
 Vector2 sharkPosition;
-Vector2 playerPosition = { 0, 0 };
+Vector2 playerPosition;
 int SkippedFrames = 0;
 
 void SharkRoam() {
@@ -21,14 +20,11 @@ void SetVars() {
     sharkPosition.y = 20;
 }
 
-
-
 int main(void)
 {
     // Initialization
     //--------------------------------------------------------------------------------------
-    
-    InitWindow(screenWidth, screenHeight, "raylib Shark! Shark!");
+    InitWindow(screenWidth, screenHeight, "Shark! Shark!");
 
     SetVars();
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
