@@ -1,11 +1,15 @@
 #include "raylib.h"
-#include <stdio.h>
 
-const int screenWidth = 800;
-const int screenHeight = 450;
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <math.h>
+
+#if defined(PLATFORM_WEB)
+#include <emscripten/emscripten.h>
+#endif
 
 typedef struct Shark {
-    Vector2 origin;
     Vector2 position;
     Vector2 objective;
     Vector2 speed;
@@ -13,9 +17,40 @@ typedef struct Shark {
     bool active;
 } Shark;
 
+const int screenWidth = 800;
+const int screenHeight = 450;
 Vector2 playerPosition;
-int SkippedFrames = 0;
+//int SkippedFrames = 0;
 Shark mrShark;
+int sharkBounces = 0;
+int sharkMaxBounces = 5;
+
+void SetShark() {
+    mrShark.active = true;
+    mrShark.objective = playerPosition;
+
+    float sideX;
+    float sideY;
+    float module;
+    module = sqrt(pow(mrShark.objective.x - mrShark.position.x, 2) + pow(mrShark.objective.y - mrShark.position.y, 2));
+
+    sideX = (mrShark.objective.x - mrShark.position.x) * 2 / module;
+    sideY = (mrShark.objective.y - mrShark.position.y) * 2 / module;
+
+    mrShark.speed = (Vector2){ sideX, sideY };
+}
+
+void SetVars() {
+    playerPosition.x = (float)screenWidth / 2;
+    playerPosition.y = (float)screenHeight / 2;
+
+    mrShark.position = (Vector2){ (float)screenWidth - 20, 20 };
+
+    SetShark();
+
+    //printf("DEBUG: SETTING shark coords x:%f y:%f sx:%f sy:%f\n", mrShark.position.x, mrShark.position.y, mrShark.speed.x, mrShark.speed.y);
+    //printf("DEBUG: SETTING player coords x:%f y:%f\n", playerPosition.x, playerPosition.y);
+}
 
 void SharkRoam() {
     if (mrShark.active)
@@ -25,33 +60,16 @@ void SharkRoam() {
         mrShark.position.x += mrShark.speed.x;
         mrShark.position.y += mrShark.speed.y;
 
-        printf("DEBUG: shark coords x:%f y:%f sx:%f sy:%f\n", mrShark.position.x, mrShark.position.y, mrShark.speed.x, mrShark.speed.y);
+        if (mrShark.position.x <= 0 || mrShark.position.x >= (float)screenWidth - 20) {
+            printf("reset position\n");
+            SetShark();
+            if (sharkBounces == sharkMaxBounces)
+                mrShark.active = false;
+            sharkBounces++;
+        }
+
+        //printf("DEBUG: shark coords x:%f y:%f sx:%f sy:%f\n", mrShark.position.x, mrShark.position.y, mrShark.speed.x, mrShark.speed.y);
     }
-}
-
-void SetVars() {
-    playerPosition.x = (float)screenWidth / 2;
-    playerPosition.y = (float)screenHeight / 2;
-
-    mrShark.origin = (Vector2){ (float)screenWidth - 20, 20 };
-    mrShark.position = (Vector2){ (float)screenWidth - 20, 20 };
-    mrShark.active = true;
-
-    mrShark.objective = playerPosition;
-
-    float sideX;
-    float sideY;
-    float module;
-    module = sqrt(pow(mrShark.objective.x - mrShark.origin.x, 2) +
-        pow(mrShark.objective.y - mrShark.origin.y, 2));
-
-    sideX = (mrShark.objective.x - mrShark.origin.x)*10/module;
-    sideY = (mrShark.objective.y - mrShark.origin.y)*10/module;
-
-    mrShark.speed = (Vector2){ sideX, sideY };
-
-    printf("DEBUG: SETTING shark coords x:%f y:%f sx:%f sy:%f\n", mrShark.position.x, mrShark.position.y, mrShark.speed.x, mrShark.speed.y);
-    printf("DEBUG: SETTING player coords x:%f y:%f\n", playerPosition.x, playerPosition.y);
 }
 
 int main(void)
@@ -80,9 +98,9 @@ int main(void)
         //printf("DEBUG: player coords x:%f y:%f\n", ballPosition.x, ballPosition.y);
         //----------------------------------------------------------------------------------
         
-        //if (SkippedFrames >= 2) {
+        //if (SkippedFrames >= 4) {
             SharkRoam();
-        //    SkippedFrames = 0;
+            //SkippedFrames = 0;
         //}
         //SkippedFrames++;
         // Draw
@@ -96,7 +114,8 @@ int main(void)
             }*/
 
             DrawRectangle(playerPosition.x, playerPosition.y, 20, 15, YELLOW);
-            DrawRectangle(mrShark.position.x, mrShark.position.y, 50, 30, BLACK);
+            if (mrShark.active)
+                DrawRectangle(mrShark.position.x, mrShark.position.y, 50, 30, BLACK);
 
         EndDrawing();
         //----------------------------------------------------------------------------------
