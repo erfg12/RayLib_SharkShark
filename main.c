@@ -22,22 +22,37 @@ typedef struct SeaCreature {
     Vector2 position; // current positioning
     Vector2 origin; // helps determine which direction to head when spawned
     bool active;
-    int type; // 1-5 = fish ranked, 6 = seahorse, 7 = crab, 8 = lobster, 9 = jellyfish (use for creatureSize and creatureSpeed)
+    int type; // 0-4 = fish ranked, 5 = seahorse, 6 = crab, 7 = lobster, 8 = jellyfish (use for creatureSize and creatureSpeed)
 } SeaCreature;
+
+int GetRandomNum(int min, int max)
+{
+    int range, result, cutoff;
+    if (min >= max) return min; 
+    range = max - min + 1;
+    cutoff = (RAND_MAX / range) * range;
+    do { result = rand(); } while (result >= cutoff);
+    return result % range + min;
+}
 
 const int screenWidth = 800;
 const int screenHeight = 450;
 Vector2 playerPosition;
+int lives = 5;
+int playerRank = 1;
 int FishSpawnTimer = 0;
 Shark mrShark;
 int sharkBounces = 0;
 int sharkMaxBounces = 5;
 int score = 0;
+int SharkSpawnTimer = 0;
+bool pause, GameOver = false;
 SeaCreature creatures[27];
 Vector2 creatureSizes[9] = { {20,15}, {23,20}, {30,20}, {31,23}, {40,32}, {20,35}, {30,30}, {30,30}, {30,60} }; // use SC type to get size
 float creatureSpeed[9] = {1, 1.3, 1.5, 1.7, 2, 2, 2, 2, 2}; // use SC type to get speed
 int creatureRank[9] = {1, 2, 3, 4, 5, 5, 5, 5, 6}; // use SC type to get rank. Rank determines what a creature can eat. (jellyfish are immune)
 Color creatureColors[9] = {DARKBLUE, GOLD, PURPLE, YELLOW, RED, GREEN, ORANGE, ORANGE, PINK};
+
 void SetShark() {
     mrShark.active = true;
     mrShark.objective = playerPosition;
@@ -53,7 +68,7 @@ void SetShark() {
 }
 
 void SetFish() {
-    int t = 1; // creature type
+    int t = 0; // creature type
     for (int i = 0; i < 27; i++){ // generate 27 sea creatures
         SeaCreature sc;
         sc.position = (Vector2) {0,0};
@@ -66,11 +81,16 @@ void SetFish() {
 }
 
 void SetVars() {
+    score = 0;
+    playerRank = 1;
     playerPosition.x = (float)screenWidth / 2;
     playerPosition.y = (float)screenHeight / 2;
 
     mrShark.position = (Vector2){ (float)screenWidth - 20, 20 };
 
+    pause = false;
+    GameOver = false;
+    lives = 5;
     SetShark();
     SetFish();
     //printf("DEBUG: SETTING shark coords x:%f y:%f sx:%f sy:%f\n", mrShark.position.x, mrShark.position.y, mrShark.speed.x, mrShark.speed.y);
@@ -94,17 +114,48 @@ void SharkRoam() {
         }
 
         //printf("DEBUG: shark coords x:%f y:%f sx:%f sy:%f\n", mrShark.position.x, mrShark.position.y, mrShark.speed.x, mrShark.speed.y);
+    } else {
+        if (SharkSpawnTimer >= 600) {
+            mrShark.position = (Vector2){ (float)screenWidth - 20, 20 };
+            mrShark.active = true;
+            SharkSpawnTimer = 0;
+        }
+        SharkSpawnTimer++;
     }
 }
 
-int GetRandomNum(int min, int max)
-{
-    int range, result, cutoff;
-    if (min >= max) return min; 
-    range = max - min + 1;
-    cutoff = (RAND_MAX / range) * range;
-    do { result = rand(); } while (result >= cutoff);
-    return result % range + min;
+void FishSpawn() {
+    if (FishSpawnTimer >= 120){
+        int pickCreature = GetRandomNum(0,26);
+        if (!creatures[pickCreature].active){
+            srand ( time(NULL) );
+            int pickSide[2] = {0,(float)screenWidth - 20};
+            float pickHeight = GetRandomNum(20,screenHeight - 50);
+            float ps = pickSide[rand()%2];
+            if (creatures[pickCreature].type == 6 || creatures[pickCreature].type == 7) pickHeight = (float)screenHeight - 30;
+            creatures[pickCreature].origin = (Vector2){ps,pickHeight};
+            creatures[pickCreature].position = (Vector2){ps,pickHeight};
+            creatures[pickCreature].active = true;
+        }
+        FishSpawnTimer = 0;
+    }
+    FishSpawnTimer++;
+}
+
+void FishMoveAndDeSpawn() {
+    for (int i = 0; i < 27; i++){
+        if (creatures[i].active) {
+            // move
+            if (creatures[i].origin.x <= 0)
+                creatures[i].position.x = creatures[i].position.x + creatureSpeed[creatures[i].type];
+            else if (creatures[i].origin.x >= (float)screenWidth - 20)
+                creatures[i].position.x = creatures[i].position.x - creatureSpeed[creatures[i].type];
+            // de-spawn
+            if ((creatures[i].origin.x >= (float)screenWidth - 20 && creatures[i].position.x <= 0) ||
+                (creatures[i].origin.x <= 0 && creatures[i].position.x >= (float)screenWidth - 20))
+                creatures[i].active = false;
+        }
+    }
 }
 
 int main(void)
@@ -117,65 +168,67 @@ int main(void)
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
-        // Update
-        if (IsKeyDown(KEY_RIGHT) && playerPosition.x < screenWidth) playerPosition.x += 2.0f;
-        if (IsKeyDown(KEY_LEFT) && playerPosition.x > 0) playerPosition.x -= 2.0f;
-        if (IsKeyDown(KEY_UP) && playerPosition.y > 0) playerPosition.y -= 2.0f;
-        if (IsKeyDown(KEY_DOWN) && playerPosition.y < screenHeight) playerPosition.y += 2.0f;
+        struct Rectangle playerRec = { playerPosition.x, playerPosition.y, creatureSizes[playerRank].x, creatureSizes[playerRank].y };
+        struct Rectangle sharkRec = { mrShark.position.x, mrShark.position.y, mrShark.width, mrShark.height };
 
-        struct Rectangle playerRec = { playerPosition.x, playerPosition.y, 20, 15 };
-        //struct Rectangle sharkRec = { sharkPosition.x, sharkPosition.y, mrShark.width, mrShark.height };
-        
-        SharkRoam();
+        if (IsKeyPressed(KEY_P)) { if (pause) pause = false; else pause = true; }
+        if (IsKeyPressed(KEY_ENTER) && GameOver) { SetVars(); printf("restarting game"); }
 
-        if (FishSpawnTimer >= 50){
-            int pickCreature = GetRandomNum(0,26);
-            if (!creatures[pickCreature].active){
-                srand ( time(NULL) );
-                int pickSide[] = {0,(float)screenWidth - 20};
-                int pickHeight = GetRandomNum(20,screenHeight - 50);
-                if (creatures[pickCreature].type == 7 || creatures[pickCreature].type == 8) pickHeight = (float)screenHeight - creatureSizes[7].x;
-                creatures[pickCreature].origin = (Vector2){pickSide[rand()%2],pickHeight};
-                creatures[pickCreature].position = creatures[pickCreature].origin;
-                creatures[pickCreature].active = true;
-            }
-            FishSpawnTimer = 0;
-        }
-        FishSpawnTimer++;
-
-        // make fish move or de-spawn when destination reached
-        for (int i = 0; i < 27; i++){
-            if (creatures[i].active) {
-                // move
-                if (creatures[i].origin.x == 0)
-                    creatures[i].position.x = creatures[i].position.x + creatureSpeed[creatures[i].type];
-                else if (creatures[i].origin.x == (float)screenWidth - 20)
-                    creatures[i].position.x = creatures[i].position.x - creatureSpeed[creatures[i].type];
-                // de-spawn
-                if ((creatures[i].origin.x == (float)screenWidth - 20 && creatures[i].position.x <= 0) ||
-                    (creatures[i].origin.x == 0 && creatures[i].position.x >= (float)screenWidth - 20))
-                    creatures[i].active = false;
-            }
+        if (!pause && !GameOver) {
+            if (IsKeyDown(KEY_RIGHT) && playerPosition.x < screenWidth) playerPosition.x += 2.0f;
+            if (IsKeyDown(KEY_LEFT) && playerPosition.x > 0) playerPosition.x -= 2.0f;
+            if (IsKeyDown(KEY_UP) && playerPosition.y > 0) playerPosition.y -= 2.0f;
+            if (IsKeyDown(KEY_DOWN) && playerPosition.y < screenHeight) playerPosition.y += 2.0f;
+            
+            SharkRoam();
+            FishSpawn();
+            FishMoveAndDeSpawn();
         }
 
         // DRAW
         BeginDrawing();
             ClearBackground(BLUE);
             DrawText(TextFormat("SCORE %4i", score), 10, 10, 20, RAYWHITE);
-            /*if (CheckCollisionRecs(playerRec, mrShark.position)) {
-                DrawText("GAME OVER!", screenWidth / 2, screenHeight / 2, 20, RED);
-            }*/
-            DrawRectangle(playerPosition.x, playerPosition.y, 20, 15, YELLOW);
+            DrawText(TextFormat("%4i LIVES", lives), (float)screenWidth - 120, 10, 20, RAYWHITE);
+            if (GameOver) 
+                DrawText(TextFormat("GAME OVER!\n\nYOUR SCORE: %4i\n\nPRESS ENTER TO RESTART GAME", score), screenWidth / 2 - 100, screenHeight / 2 - 100, 20, RED);
+            if (pause)
+                DrawText("PAUSED\n\nPRESS P TO RESUME", screenWidth / 2 - 50, screenHeight / 2 - 50, 20, WHITE);
+            if (CheckCollisionRecs(playerRec, sharkRec)) {
+                lives--;
+                playerPosition = (Vector2){0,0};
+                if (lives < 0) {
+                    GameOver = true;
+                }
+            }
+            DrawRectangle(playerPosition.x, playerPosition.y, creatureSizes[playerRank].x, creatureSizes[playerRank].y, YELLOW);
             if (mrShark.active)
                 DrawRectangle(mrShark.position.x, mrShark.position.y, mrShark.width, mrShark.height, BLACK);
             for (int i = 0; i < 27; i++){
                 if (creatures[i].active){
-                    DrawRectangle(creatures[i].position.x, creatures[i].position.y, creatureSizes[creatures[i].type].x, creatureSizes[creatures[i].type].y, creatureColors[i]);
+                    struct Rectangle FishRec = { creatures[i].position.x, creatures[i].position.y, creatureSizes[creatures[i].type].x, creatureSizes[creatures[i].type].y };
+                    if (CheckCollisionRecs(playerRec, FishRec)) {
+                        if (playerRank >= creatureRank[creatures[i].type]) {
+                            creatures[i].active = false;
+                            score = score + 100;
+                            if (score%1000 == 0){
+                                playerRank++;
+                                printf("player rank is now %i\n", playerRank);
+                            }
+                        } else {
+                            lives--;
+                            playerPosition = (Vector2){0,0};
+                            if (lives < 0) {
+                                GameOver = true;
+                            }
+                        }
+                    }
+                    DrawRectangle(creatures[i].position.x, creatures[i].position.y, creatureSizes[creatures[i].type].x, creatureSizes[creatures[i].type].y, creatureColors[creatures[i].type]);
                 }
             }
         EndDrawing();
     }
-    CloseWindow();        // Close window and OpenGL context
+    CloseWindow();
     return 0;
 }
 
