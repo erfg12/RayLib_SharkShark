@@ -166,6 +166,8 @@ int main(void)
     SetVars();
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
 
+    RenderTexture2D target = LoadRenderTexture(50, 50);
+
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
@@ -186,6 +188,12 @@ int main(void)
             FishMoveAndDeSpawn();
         }
 
+        // CREATE SPRITES (tested and works!)
+        BeginTextureMode(target);
+            ClearBackground(RAYWHITE);  // Clear render texture background color
+            DrawRectangle(0, 0, 50, 50, YELLOW);
+        EndTextureMode();
+
         // DRAW
         BeginDrawing();
             ClearBackground(BLUE);
@@ -203,7 +211,8 @@ int main(void)
                     GameOver = true;
                 }
             }
-            DrawRectangle(playerPosition.x, playerPosition.y, creatureSizes[playerRank].x, creatureSizes[playerRank].y, YELLOW);
+            //DrawRectangle(playerPosition.x, playerPosition.y, creatureSizes[playerRank].x, creatureSizes[playerRank].y, YELLOW);
+            DrawTexture(target.texture, playerPosition.x, playerPosition.y, YELLOW);
             if (mrShark.active)
                 DrawRectangle(mrShark.position.x, mrShark.position.y, mrShark.width, mrShark.height, BLACK);
             for (int i = 0; i < 27; i++){
