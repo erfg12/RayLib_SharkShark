@@ -1,4 +1,5 @@
 #include "raylib.h"
+#include "rlgl.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,12 +17,14 @@ typedef struct Shark {
     int width;
     int height;
     bool active;
+    int direction;
 } Shark;
 
 typedef struct SeaCreature {
     Vector2 position; // current positioning
     Vector2 origin; // helps determine which direction to head when spawned
     bool active;
+    int direction;
     int type; // 0-4 = fish ranked, 5 = seahorse, 6 = crab, 7 = lobster, 8 = jellyfish (use for creatureSize and creatureSpeed)
 } SeaCreature;
 
@@ -40,12 +43,14 @@ const int screenHeight = 450;
 Vector2 playerPosition;
 int lives = 5;
 int playerRank = 1;
+int playerDirection = 1; // 1 = left, -1 = right
 int FishSpawnTimer = 0;
 Shark mrShark;
 int sharkBounces = 0;
 int sharkMaxBounces = 5;
 int score = 0;
 int SharkSpawnTimer = 0;
+int sharkDirection = 1; // 1 = left, -1 = right
 bool pause, GameOver = false;
 SeaCreature creatures[27];
 Vector2 creatureSizes[9] = { {20,15}, {23,20}, {30,20}, {31,23}, {40,32}, {20,35}, {30,30}, {30,30}, {30,60} }; // use SC type to get size
@@ -62,6 +67,11 @@ void SetShark() {
 
     float sideX = (mrShark.objective.x - mrShark.position.x) / module;
     float sideY = (mrShark.objective.y - mrShark.position.y) / module;
+
+    if (mrShark.position.x <= 5)
+        sharkDirection = -1;
+    else
+        sharkDirection = 1;
 
     mrShark.speed = (Vector2){ sideX, sideY };
 }
@@ -109,7 +119,6 @@ void SharkRoam() {
         mrShark.position.y += mrShark.speed.y;
 
         if (mrShark.position.x <= 0 || mrShark.position.x >= (float)screenWidth - 20) {
-            printf("reset position\n");
             SetShark();
             if (sharkBounces == sharkMaxBounces)
                 mrShark.active = false;
@@ -130,7 +139,7 @@ void FishSpawn() {
         int pickCreature = GetRandomNum(0,26);
         if (!creatures[pickCreature].active){
             srand ( time(NULL) );
-            int pickSide[2] = {0,(float)screenWidth - 20};
+            int pickSide[2] = {20,(float)screenWidth - 20};
             float pickHeight = GetRandomNum(20,screenHeight - 50);
             float ps = pickSide[rand()%2];
             if (creatures[pickCreature].type == 6 || creatures[pickCreature].type == 7) pickHeight = (float)screenHeight - 30;
@@ -147,13 +156,13 @@ void FishMoveAndDeSpawn() {
     for (int i = 0; i < 27; i++){
         if (creatures[i].active) {
             // move
-            if (creatures[i].origin.x <= 0)
+            if (creatures[i].origin.x <= 40)
                 creatures[i].position.x = creatures[i].position.x + creatureSpeed[creatures[i].type];
-            else if (creatures[i].origin.x >= (float)screenWidth - 20)
+            else if (creatures[i].origin.x >= (float)screenWidth - 40)
                 creatures[i].position.x = creatures[i].position.x - creatureSpeed[creatures[i].type];
             // de-spawn
-            if ((creatures[i].origin.x >= (float)screenWidth - 20 && creatures[i].position.x <= 0) ||
-                (creatures[i].origin.x <= 0 && creatures[i].position.x >= (float)screenWidth - 20))
+            if ((creatures[i].origin.x >= (float)screenWidth && creatures[i].position.x <= 0) ||
+                (creatures[i].origin.x <= 0 && creatures[i].position.x >= (float)screenWidth ))
                 creatures[i].active = false;
         }
     }
@@ -166,7 +175,10 @@ int main(void)
     SetVars();
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
 
-    RenderTexture2D target = LoadRenderTexture(50, 50);
+    RenderTexture2D Fish1Texture_Left = LoadRenderTexture(30, 25);
+    RenderTexture2D Fish1Texture_Right = LoadRenderTexture(30, 25);
+    RenderTexture2D SharkTexture = LoadRenderTexture(120, 60);
+    RenderTexture2D CrustaceanTexture = LoadRenderTexture(40, 80);
 
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
@@ -178,8 +190,8 @@ int main(void)
         if (IsKeyPressed(KEY_ENTER) && GameOver) { SetVars(); printf("restarting game"); }
 
         if (!pause && !GameOver) {
-            if (IsKeyDown(KEY_RIGHT) && playerPosition.x < screenWidth) playerPosition.x += 2.0f;
-            if (IsKeyDown(KEY_LEFT) && playerPosition.x > 0) playerPosition.x -= 2.0f;
+            if (IsKeyDown(KEY_RIGHT) && playerPosition.x < screenWidth) { playerPosition.x += 2.0f; playerDirection = -1; }
+            if (IsKeyDown(KEY_LEFT) && playerPosition.x > 0) { playerPosition.x -= 2.0f; playerDirection = 1; }
             if (IsKeyDown(KEY_UP) && playerPosition.y > 0) playerPosition.y -= 2.0f;
             if (IsKeyDown(KEY_DOWN) && playerPosition.y < screenHeight) playerPosition.y += 2.0f;
             
@@ -188,10 +200,35 @@ int main(void)
             FishMoveAndDeSpawn();
         }
 
-        // CREATE SPRITES (tested and works!)
-        BeginTextureMode(target);
-            ClearBackground(RAYWHITE);  // Clear render texture background color
-            DrawRectangle(0, 0, 50, 50, YELLOW);
+        // CREATE SPRITES
+        BeginTextureMode(Fish1Texture_Left);
+            //rlDisableBackfaceCulling(); // useful if we draw an object backwards and don't know why it isn't working
+            DrawTriangle((Vector2) { 20, 0 }, (Vector2) { 0, 12 }, (Vector2) { 20, 25 }, YELLOW); // body
+            DrawTriangle((Vector2) { 30, 5 }, (Vector2) { 15, 12 }, (Vector2) { 30, 16 }, YELLOW); // tail
+        EndTextureMode();
+        BeginTextureMode(Fish1Texture_Right);
+            DrawTriangle((Vector2) { 0, 5 }, (Vector2) { 0, 16 }, (Vector2) { 15, 12 }, YELLOW); // tail
+            DrawTriangle((Vector2) { 10, 0 }, (Vector2) { 10, 25 }, (Vector2) { 30, 12 }, YELLOW); // body
+        EndTextureMode();
+        BeginTextureMode(SharkTexture);
+            ClearBackground(BLANK);
+            if (sharkDirection == 1) {
+                DrawRectangleRounded((Rectangle) { 0, 15, 110, 30 }, 1, 1, BLACK); // body
+                DrawTriangle((Vector2) { 60, 5 }, (Vector2) { 15, 30 }, (Vector2) { 60, 60 }, BLACK); // fins
+                DrawTriangle((Vector2) { 115, 10 }, (Vector2) { 70, 25 }, (Vector2) { 115, 60 }, BLACK); // tail
+            }
+            else {
+                rlDisableBackfaceCulling();
+                DrawRectangleRounded((Rectangle) { 10, 15, 110, 30 }, 1, 1, BLACK); // body
+                DrawTriangle((Vector2) { 60, 5 }, (Vector2) { 105, 30 }, (Vector2) { 60, 60 }, BLACK); // fins
+                DrawTriangle((Vector2) { 5, 10 }, (Vector2) { 50, 25 }, (Vector2) { 5, 60 }, BLACK); // tail
+            }
+        EndTextureMode();
+        BeginTextureMode(CrustaceanTexture);
+            //rlDisableBackfaceCulling(); // useful if we draw an object backwards and don't know why it isn't working
+            //DrawTriangle((Vector2) { 20, 0 }, (Vector2) { 0, 12 }, (Vector2) { 20, 25 }, YELLOW); // body
+            //DrawTriangle((Vector2) { 30, 5 }, (Vector2) { 15, 12 }, (Vector2) { 30, 16 }, YELLOW); // tail
+            DrawRing((Vector2){0,0}, 5, 5, 135, 225, 2, ORANGE);
         EndTextureMode();
 
         // DRAW
@@ -211,10 +248,14 @@ int main(void)
                     GameOver = true;
                 }
             }
-            //DrawRectangle(playerPosition.x, playerPosition.y, creatureSizes[playerRank].x, creatureSizes[playerRank].y, YELLOW);
-            DrawTexture(target.texture, playerPosition.x, playerPosition.y, YELLOW);
+
+            if (playerDirection == 1)
+                DrawTexture(Fish1Texture_Left.texture, playerPosition.x, playerPosition.y, YELLOW); // draw player
+            else
+                DrawTexture(Fish1Texture_Right.texture, playerPosition.x, playerPosition.y, YELLOW);
+
             if (mrShark.active)
-                DrawRectangle(mrShark.position.x, mrShark.position.y, mrShark.width, mrShark.height, BLACK);
+                DrawTexture(SharkTexture.texture, mrShark.position.x, mrShark.position.y, WHITE); // draw shark
             for (int i = 0; i < 27; i++){
                 if (creatures[i].active){
                     struct Rectangle FishRec = { creatures[i].position.x, creatures[i].position.y, creatureSizes[creatures[i].type].x, creatureSizes[creatures[i].type].y };
@@ -234,11 +275,20 @@ int main(void)
                             }
                         }
                     }
-                    DrawRectangle(creatures[i].position.x, creatures[i].position.y, creatureSizes[creatures[i].type].x, creatureSizes[creatures[i].type].y, FishColor(creatures[i].type));
+                    /*if (creatures[i].origin.x <= 20)
+                        DrawTexture(Fish1Texture_Right.texture, creatures[i].position.x, creatures[i].position.y, FishColor(creatures[i].type));
+                    else
+                        DrawTexture(Fish1Texture_Left.texture, creatures[i].position.x, creatures[i].position.y, FishColor(creatures[i].type));*/
+
+                    DrawTexture(CrustaceanTexture.texture, creatures[i].position.x, creatures[i].position.y, FishColor(creatures[i].type));
                 }
             }
         EndDrawing();
     }
+    UnloadRenderTexture(Fish1Texture_Left);
+    UnloadRenderTexture(Fish1Texture_Right);
+    UnloadRenderTexture(SharkTexture);
+    UnloadRenderTexture(CrustaceanTexture);
     CloseWindow();
     return 0;
 }
