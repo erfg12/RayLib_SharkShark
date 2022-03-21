@@ -51,7 +51,6 @@ SeaCreature creatures[27];
 Vector2 creatureSizes[9] = { {20,15}, {23,20}, {30,20}, {31,23}, {40,32}, {20,35}, {30,30}, {30,30}, {30,60} }; // use SC type to get size
 float creatureSpeed[9] = {1, 1.3, 1.5, 1.7, 2, 2, 2, 2, 2}; // use SC type to get speed
 int creatureRank[9] = {1, 2, 3, 4, 5, 5, 5, 5, 6}; // use SC type to get rank. Rank determines what a creature can eat. (jellyfish are immune)
-Color creatureColors[9] = {DARKBLUE, GOLD, PURPLE, YELLOW, RED, GREEN, ORANGE, ORANGE, PINK};
 
 void SetShark() {
     mrShark.active = true;
@@ -65,6 +64,11 @@ void SetShark() {
     float sideY = (mrShark.objective.y - mrShark.position.y) / module;
 
     mrShark.speed = (Vector2){ sideX, sideY };
+}
+
+Color FishColor(int i) {
+    Color creatureColors[9] = { DARKBLUE, GOLD, PURPLE, YELLOW, RED, GREEN, ORANGE, ORANGE, PINK };
+    return creatureColors[i];
 }
 
 void SetFish() {
@@ -101,7 +105,6 @@ void SharkRoam() {
     if (mrShark.active)
     {
         mrShark.objective = playerPosition;
-
         mrShark.position.x += mrShark.speed.x;
         mrShark.position.y += mrShark.speed.y;
 
@@ -112,8 +115,6 @@ void SharkRoam() {
                 mrShark.active = false;
             sharkBounces++;
         }
-
-        //printf("DEBUG: shark coords x:%f y:%f sx:%f sy:%f\n", mrShark.position.x, mrShark.position.y, mrShark.speed.x, mrShark.speed.y);
     } else {
         if (SharkSpawnTimer >= 600) {
             mrShark.position = (Vector2){ (float)screenWidth - 20, 20 };
@@ -194,8 +195,9 @@ int main(void)
                 DrawText(TextFormat("GAME OVER!\n\nYOUR SCORE: %4i\n\nPRESS ENTER TO RESTART GAME", score), screenWidth / 2 - 100, screenHeight / 2 - 100, 20, RED);
             if (pause)
                 DrawText("PAUSED\n\nPRESS P TO RESUME", screenWidth / 2 - 50, screenHeight / 2 - 50, 20, WHITE);
-            if (CheckCollisionRecs(playerRec, sharkRec)) {
-                lives--;
+            if (CheckCollisionRecs(playerRec, sharkRec)) { // TO-DO: Make collision on tail hurt shark, on front kill player
+                if (!GameOver && !pause)
+                    lives--;
                 playerPosition = (Vector2){0,0};
                 if (lives < 0) {
                     GameOver = true;
@@ -223,7 +225,7 @@ int main(void)
                             }
                         }
                     }
-                    DrawRectangle(creatures[i].position.x, creatures[i].position.y, creatureSizes[creatures[i].type].x, creatureSizes[creatures[i].type].y, creatureColors[creatures[i].type]);
+                    DrawRectangle(creatures[i].position.x, creatures[i].position.y, creatureSizes[creatures[i].type].x, creatureSizes[creatures[i].type].y, FishColor(creatures[i].type));
                 }
             }
         EndDrawing();
