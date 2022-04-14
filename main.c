@@ -76,17 +76,14 @@ void SetShark() {
     mrShark.speed = (Vector2){ sideX, sideY };
 }
 
-Color FishColor(int i) {
-    Color creatureColors[9] = { DARKBLUE, GOLD, PURPLE, YELLOW, RED, GREEN, ORANGE, ORANGE, PINK };
-    return creatureColors[i];
-}
-
 void SetFish() {
     int t = 0; // creature type
     for (int i = 0; i < 27; i++){ // generate 27 sea creatures
         SeaCreature sc;
         sc.position = (Vector2) {0,0};
         sc.origin = (Vector2) {0,0};
+        if (t > 8)
+            t = 8;
         sc.type = t;
         sc.active = false;
         creatures[i] = sc;
@@ -175,10 +172,23 @@ int main(void)
     SetVars();
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
 
-    RenderTexture2D FishTexturesLeft[6] = {LoadRenderTexture(30, 25), LoadRenderTexture(30, 35) , LoadRenderTexture(30, 35) , LoadRenderTexture(30, 35) , LoadRenderTexture(30, 35) , LoadRenderTexture(30, 35) };
-    RenderTexture2D FishTexturesRight[6] = {LoadRenderTexture(30, 25), LoadRenderTexture(30, 35) , LoadRenderTexture(30, 35) , LoadRenderTexture(30, 35) , LoadRenderTexture(30, 35) , LoadRenderTexture(30, 35) };
-    RenderTexture2D SharkTexture = LoadRenderTexture(120, 60);
-    RenderTexture2D CrustaceanTexture = LoadRenderTexture(40, 40);
+    Texture2D FishTexturesRight[5] = { LoadTexture("resources/rank1.png"), LoadTexture("resources/rank2.png"), LoadTexture("resources/rank3.png"), LoadTexture("resources/rank4.png"), LoadTexture("resources/rank5.png") };
+    Image FishImagesLeft[5] = { LoadImage("resources/rank1.png"), LoadImage("resources/rank2.png"), LoadImage("resources/rank3.png"), LoadImage("resources/rank4.png"), LoadImage("resources/rank5.png") };
+    ImageFlipHorizontal(&FishImagesLeft[0]);
+    ImageFlipHorizontal(&FishImagesLeft[1]);
+    ImageFlipHorizontal(&FishImagesLeft[2]);
+    ImageFlipHorizontal(&FishImagesLeft[3]);
+    ImageFlipHorizontal(&FishImagesLeft[4]);
+    Texture2D FishTexturesLeft[5] = { LoadTextureFromImage(FishImagesLeft[0]), LoadTextureFromImage(FishImagesLeft[1]), LoadTextureFromImage(FishImagesLeft[2]), LoadTextureFromImage(FishImagesLeft[3]), LoadTextureFromImage(FishImagesLeft[4]) };
+    Texture2D SharkTexture = LoadTexture("resources/shark.png");
+    Image SharkImage = LoadImage("resources/shark.png");
+    ImageFlipHorizontal(&SharkImage);
+    Texture2D SharkTextureLeft = LoadTextureFromImage(SharkImage);
+    Texture2D SharkDeadTexture = LoadTexture("resources/shark_dead.png");
+    Texture2D SeaHorseTexture = LoadTexture("resources/seahorse.png");
+    Texture2D CrabTexture = LoadTexture("resources/crab.png");
+    Texture2D LobsterTexture = LoadTexture("resources/lobster.png");
+    Texture2D JellyfishTexture = LoadTexture("resources/jellyfish.png");
 
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
@@ -207,79 +217,6 @@ int main(void)
             FishMoveAndDeSpawn();
         }
 
-        // CREATE SPRITES
-        BeginTextureMode(FishTexturesLeft[0]);
-            //rlDisableBackfaceCulling(); // useful if we draw an object backwards and don't know why it isn't working
-            DrawTriangle((Vector2) { 20, 0 }, (Vector2) { 0, 12 }, (Vector2) { 20, 25 }, YELLOW); // body
-            DrawTriangle((Vector2) { 30, 5 }, (Vector2) { 15, 12 }, (Vector2) { 30, 16 }, YELLOW); // tail
-        EndTextureMode();
-        BeginTextureMode(FishTexturesRight[0]);
-            DrawTriangle((Vector2) { 0, 5 }, (Vector2) { 0, 16 }, (Vector2) { 15, 12 }, YELLOW); // tail
-            DrawTriangle((Vector2) { 10, 0 }, (Vector2) { 10, 25 }, (Vector2) { 30, 12 }, YELLOW); // body
-        EndTextureMode();
-        BeginTextureMode(FishTexturesLeft[1]);
-            DrawTriangle((Vector2) { 20, 0 }, (Vector2) { 0, 17 }, (Vector2) { 20, 30 }, YELLOW); // body
-            DrawTriangle((Vector2) { 30, 5 }, (Vector2) { 15, 17 }, (Vector2) { 30, 21 }, YELLOW); // tail
-        EndTextureMode();
-        BeginTextureMode(FishTexturesRight[1]);
-            DrawTriangle((Vector2) { 0, 5 }, (Vector2) { 0, 21 }, (Vector2) { 15, 17 }, YELLOW); // tail
-            DrawTriangle((Vector2) { 10, 0 }, (Vector2) { 10, 30 }, (Vector2) { 30, 17 }, YELLOW); // body
-        EndTextureMode();
-        BeginTextureMode(FishTexturesLeft[2]);
-            DrawTriangle((Vector2) { 20, 0 }, (Vector2) { 0, 17 }, (Vector2) { 20, 30 }, YELLOW); // body
-            DrawTriangle((Vector2) { 30, 5 }, (Vector2) { 15, 17 }, (Vector2) { 30, 21 }, YELLOW); // tail
-        EndTextureMode();
-        BeginTextureMode(FishTexturesRight[2]);
-            DrawTriangle((Vector2) { 0, 5 }, (Vector2) { 0, 21 }, (Vector2) { 15, 17 }, YELLOW); // tail
-            DrawTriangle((Vector2) { 10, 0 }, (Vector2) { 10, 30 }, (Vector2) { 30, 17 }, YELLOW); // body
-        EndTextureMode();
-        BeginTextureMode(FishTexturesLeft[3]);
-            DrawTriangle((Vector2) { 20, 0 }, (Vector2) { 0, 17 }, (Vector2) { 20, 30 }, YELLOW); // body
-            DrawTriangle((Vector2) { 30, 5 }, (Vector2) { 15, 17 }, (Vector2) { 30, 21 }, YELLOW); // tail
-        EndTextureMode();
-        BeginTextureMode(FishTexturesRight[3]);
-            DrawTriangle((Vector2) { 0, 5 }, (Vector2) { 0, 21 }, (Vector2) { 15, 17 }, YELLOW); // tail
-            DrawTriangle((Vector2) { 10, 0 }, (Vector2) { 10, 30 }, (Vector2) { 30, 17 }, YELLOW); // body
-        EndTextureMode();
-        BeginTextureMode(FishTexturesLeft[4]);
-            DrawTriangle((Vector2) { 20, 0 }, (Vector2) { 0, 17 }, (Vector2) { 20, 30 }, YELLOW); // body
-            DrawTriangle((Vector2) { 30, 5 }, (Vector2) { 15, 17 }, (Vector2) { 30, 21 }, YELLOW); // tail
-        EndTextureMode();
-        BeginTextureMode(FishTexturesRight[4]);
-            DrawTriangle((Vector2) { 0, 5 }, (Vector2) { 0, 21 }, (Vector2) { 15, 17 }, YELLOW); // tail
-            DrawTriangle((Vector2) { 10, 0 }, (Vector2) { 10, 30 }, (Vector2) { 30, 17 }, YELLOW); // body
-        EndTextureMode();
-        BeginTextureMode(FishTexturesLeft[5]);
-            DrawTriangle((Vector2) { 20, 0 }, (Vector2) { 0, 17 }, (Vector2) { 20, 30 }, YELLOW); // body
-            DrawTriangle((Vector2) { 30, 5 }, (Vector2) { 15, 17 }, (Vector2) { 30, 21 }, YELLOW); // tail
-        EndTextureMode();
-        BeginTextureMode(FishTexturesRight[5]);
-            DrawTriangle((Vector2) { 0, 5 }, (Vector2) { 0, 21 }, (Vector2) { 15, 17 }, YELLOW); // tail
-            DrawTriangle((Vector2) { 10, 0 }, (Vector2) { 10, 30 }, (Vector2) { 30, 17 }, YELLOW); // body
-        EndTextureMode();
-        BeginTextureMode(SharkTexture);
-            ClearBackground(BLANK);
-            if (sharkDirection == 1) {
-                DrawRectangleRounded((Rectangle) { 0, 15, 110, 30 }, 1, 1, BLACK); // body
-                DrawTriangle((Vector2) { 60, 5 }, (Vector2) { 15, 30 }, (Vector2) { 60, 60 }, BLACK); // fins
-                DrawTriangle((Vector2) { 115, 10 }, (Vector2) { 70, 25 }, (Vector2) { 115, 60 }, BLACK); // tail
-                //DrawRectangle(0 + (mrShark.width / 2), 0, mrShark.width / 2, mrShark.height, RED); // test
-            }
-            else {
-                rlDisableBackfaceCulling();
-                DrawRectangleRounded((Rectangle) { 10, 15, 110, 30 }, 1, 1, BLACK); // body
-                DrawTriangle((Vector2) { 60, 5 }, (Vector2) { 105, 30 }, (Vector2) { 60, 60 }, BLACK); // fins
-                DrawTriangle((Vector2) { 5, 10 }, (Vector2) { 50, 25 }, (Vector2) { 5, 60 }, BLACK); // tail
-            }
-        EndTextureMode();
-        BeginTextureMode(CrustaceanTexture);
-            DrawRing((Vector2){10, 40}, 2, 5, 90, 270, 2, ORANGE);
-            DrawRing((Vector2){25, 40}, 2, 5, 90, 270, 2, ORANGE);
-            DrawLine(10, 35, 10, 0, ORANGE);
-            DrawLine(25, 35, 25, 0, ORANGE);
-            DrawRectangleRounded((Rectangle) { 8, 5, 19, 25 }, 10, 10, YELLOW); // body
-        EndTextureMode();
-
         // DRAW
         BeginDrawing();
             ClearBackground(BLUE);
@@ -300,15 +237,25 @@ int main(void)
                 mrShark.active = false;
             }
 
-            if (playerDirection == 1)
-                DrawTexture(FishTexturesLeft[0].texture, playerPosition.x, playerPosition.y, YELLOW); // draw player
-            else
-                DrawTexture(FishTexturesRight[0].texture, playerPosition.x, playerPosition.y, YELLOW);
+            Vector2 PlayerGoTo = { playerPosition.x, playerPosition.y };
+            if (playerDirection == 1) {
+                //DrawTexture(FishTextures[0], playerPosition.x, playerPosition.y, YELLOW); // draw player
+                DrawTextureEx(FishTexturesLeft[0], PlayerGoTo, 0, 2, YELLOW);
+            } 
+            else {
+                DrawTextureEx(FishTexturesRight[0], PlayerGoTo, 0, 2, YELLOW);
+            }
 
-            if (mrShark.active)
-                DrawTexture(SharkTexture.texture, mrShark.position.x, mrShark.position.y, WHITE); // draw shark
+            if (mrShark.active) {
+                    Vector2 GoTo = { mrShark.position.x, mrShark.position.y };
+                    if (sharkDirection == 1) // left
+                        DrawTextureEx(SharkTextureLeft, GoTo, 0, 2, YELLOW);
+                    else // right
+                        DrawTextureEx(SharkTexture, GoTo, 0, 2, YELLOW);
+            }
             for (int i = 0; i < 27; i++){
                 if (creatures[i].active){
+                    if (creatures[i].type < 0 || creatures[i].type > 8) continue;
                     struct Rectangle FishRec = { creatures[i].position.x, creatures[i].position.y, creatureSizes[creatures[i].type].x, creatureSizes[creatures[i].type].y };
                     if (CheckCollisionRecs(playerRec, FishRec)) {
                         if (playerRank >= creatureRank[creatures[i].type]) {
@@ -328,24 +275,21 @@ int main(void)
                     }
 
                     if (creatures[i].type == 6 || creatures[i].type == 7)
-                        DrawTexture(CrustaceanTexture.texture, creatures[i].position.x, creatures[i].position.y, ORANGE);
-                    else {
+                        DrawTextureEx(CrabTexture, (Vector2) { creatures[i].position.x, creatures[i].position.y }, 0, 2, YELLOW);
+                    else if (creatures[i].type <= 4 && creatures[i].type >= 0) {
+                        Vector2 GoTo = { creatures[i].position.x, creatures[i].position.y };
                         if (creatures[i].origin.x <= 20)
-                            DrawTexture(FishTexturesRight[creatures[i].type].texture, creatures[i].position.x, creatures[i].position.y, FishColor(creatures[i].type));
+                            DrawTextureEx(FishTexturesRight[creatures[i].type], GoTo, 0, 2, YELLOW);
+                            //DrawTexture(FishTextures[creatures[i].type], creatures[i].position.x, creatures[i].position.y, YELLOW); // RIGHT
                         else
-                            DrawTexture(FishTexturesLeft[creatures[i].type].texture, creatures[i].position.x, creatures[i].position.y, FishColor(creatures[i].type));
+                            DrawTextureEx(FishTexturesLeft[creatures[i].type], GoTo, 0, 2, YELLOW);
+                            //DrawTexture(FishTextures[creatures[i].type], creatures[i].position.x, creatures[i].position.y, YELLOW); // LEFT
                     }
                     
                 }
             }
         EndDrawing();
     }
-    for(int f=0; f<=5; f++) {
-        UnloadRenderTexture(FishTexturesLeft[f]);
-        UnloadRenderTexture(FishTexturesRight[f]);
-    }
-    UnloadRenderTexture(SharkTexture);
-    UnloadRenderTexture(CrustaceanTexture);
     CloseWindow();
     return 0;
 }
