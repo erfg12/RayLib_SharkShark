@@ -53,7 +53,6 @@ int SharkSpawnTimer = 0;
 int sharkDirection = 1; // 1 = left, -1 = right
 bool pause, GameOver = false;
 SeaCreature creatures[27];
-Vector2 creatureSizes[9] = { {30,25}, {30,35}, {30,20}, {31,23}, {40,32}, {20,35}, {30,30}, {30,30}, {30,60} }; // use SC type to get size
 float creatureSpeed[9] = {1, 1.3, 1.5, 1.7, 2, 2, 2, 2, 2}; // use SC type to get speed
 int creatureRank[9] = {1, 2, 3, 4, 5, 5, 5, 5, 6}; // use SC type to get rank. Rank determines what a creature can eat. (jellyfish are immune)
 
@@ -193,7 +192,7 @@ int main(void)
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
-        struct Rectangle playerRec = { playerPosition.x, playerPosition.y, creatureSizes[playerRank].x, creatureSizes[playerRank].y };
+        struct Rectangle playerRec = { playerPosition.x, playerPosition.y, 16, 16 };
 
         // these should flip depending on which direction shark is facing
         struct Rectangle sharkTailRec = { mrShark.position.x + (mrShark.width / 2), mrShark.position.y, mrShark.width / 2, mrShark.height };
@@ -256,7 +255,7 @@ int main(void)
             for (int i = 0; i < 27; i++){
                 if (creatures[i].active){
                     if (creatures[i].type < 0 || creatures[i].type > 8) continue;
-                    struct Rectangle FishRec = { creatures[i].position.x, creatures[i].position.y, creatureSizes[creatures[i].type].x, creatureSizes[creatures[i].type].y };
+                    struct Rectangle FishRec = { creatures[i].position.x, creatures[i].position.y, 16, 16 };
                     if (CheckCollisionRecs(playerRec, FishRec)) {
                         if (playerRank >= creatureRank[creatures[i].type]) {
                             creatures[i].active = false;
