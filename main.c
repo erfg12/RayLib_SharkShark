@@ -112,14 +112,17 @@ void SharkRoam() {
 
         if (mrShark.position.x <= 0 || mrShark.position.x >= (float)screenWidth - 20) {
             SetShark();
-            if (sharkBounces == sharkMaxBounces)
+            if (sharkBounces == sharkMaxBounces) {
+                mrShark.position.x = -10;
+                mrShark.position.y = -10;
                 mrShark.active = false;
+            }
             sharkBounces++;
         }
     } else {
         if (SharkSpawnTimer >= 600) {
-            mrShark.position = (Vector2){ (float)screenWidth - 20, 20 };
             mrShark.active = true;
+            mrShark.position = (Vector2){ (float)screenWidth - 20, 20 };
             SharkSpawnTimer = 0;
         }
         SharkSpawnTimer++;
@@ -155,8 +158,11 @@ void FishMoveAndDeSpawn() {
                 creatures[i].position.x = creatures[i].position.x - creatureSpeed[creatures[i].type];
             // de-spawn
             if ((creatures[i].origin.x >= (float)screenWidth && creatures[i].position.x <= 0) ||
-                (creatures[i].origin.x <= 0 && creatures[i].position.x >= (float)screenWidth ))
-                creatures[i].active = false;
+                (creatures[i].origin.x < 0 && creatures[i].position.x > (float)screenWidth )) {
+                    creatures[i].position.x = -10;
+                    creatures[i].position.y = -10;
+                    creatures[i].active = false;
+                }
         }
     }
 }
@@ -230,9 +236,9 @@ int main(void)
                     GameOver = true;
                 }
             } else if (CheckCollisionRecs(playerRec, sharkTailRec)) {
-                mrShark.active = false;
                 mrShark.position.x = -10;
                 mrShark.position.y = -10;
+                mrShark.active = false;
                 score = score + 100;
             }
 
@@ -257,10 +263,10 @@ int main(void)
                     if (creatures[i].type < 0 || creatures[i].type > 8) continue;
                     struct Rectangle FishRec = { creatures[i].position.x, creatures[i].position.y, 16, 16 };
                     if (CheckCollisionRecs(playerRec, FishRec)) {
-                        if (playerRank >= creatureRank[creatures[i].type]) {
-                            creatures[i].active = false;
+                        if ((playerRank + 1) >= creatureRank[creatures[i].type]) {
                             creatures[i].position.y = -10;
                             creatures[i].position.x = -10;
+                            creatures[i].active = false;
                             score = score + 100;
                             if (score%1000 == 0){
                                 playerRank++;
