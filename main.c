@@ -14,8 +14,6 @@ typedef struct Shark {
     Vector2 position;
     Vector2 objective;
     Vector2 speed;
-    int width;
-    int height;
     bool active;
     int direction;
 } Shark;
@@ -42,7 +40,7 @@ const int screenWidth = 800;
 const int screenHeight = 450;
 Vector2 playerPosition;
 int lives = 5;
-int playerRank = 1;
+int playerRank = 0;
 int playerDirection = 1; // 1 = left, -1 = right
 int FishSpawnTimer = 0;
 Shark mrShark;
@@ -59,8 +57,6 @@ int creatureRank[9] = {1, 2, 3, 4, 5, 5, 5, 5, 6}; // use SC type to get rank. R
 void SetShark() {
     mrShark.active = true;
     mrShark.objective = playerPosition;
-    mrShark.width = 120;
-    mrShark.height = 60;
 
     float module = sqrt(pow(mrShark.objective.x - mrShark.position.x, 2) + pow(mrShark.objective.y - mrShark.position.y, 2));
 
@@ -92,7 +88,7 @@ void SetFish() {
 
 void SetVars() {
     score = 0;
-    playerRank = 1;
+    playerRank = 0;
     playerPosition.x = (float)screenWidth / 2;
     playerPosition.y = (float)screenHeight / 2;
 
@@ -131,17 +127,18 @@ void SharkRoam() {
 }
 
 void FishSpawn() {
-    if (FishSpawnTimer >= 120){
-        int pickCreature = GetRandomNum(0,26);
+    if (FishSpawnTimer >= 60){
+        int pickCreature = 0;
+        pickCreature = GetRandomNum(0,26);
         if (!creatures[pickCreature].active){
             srand ( time(NULL) );
+            creatures[pickCreature].active = true;
             int pickSide[2] = {20,(float)screenWidth - 20};
             float pickHeight = GetRandomNum(20,screenHeight - 50);
             float ps = pickSide[rand()%2];
             if (creatures[pickCreature].type == 6 || creatures[pickCreature].type == 7) pickHeight = (float)screenHeight - 40;
             creatures[pickCreature].origin = (Vector2){ps,pickHeight};
             creatures[pickCreature].position = (Vector2){ps,pickHeight};
-            creatures[pickCreature].active = true;
         }
         FishSpawnTimer = 0;
     }
@@ -195,11 +192,11 @@ int main(void)
         struct Rectangle playerRec = { playerPosition.x, playerPosition.y, 16, 16 };
 
         // these should flip depending on which direction shark is facing
-        struct Rectangle sharkTailRec = { mrShark.position.x + (mrShark.width / 2), mrShark.position.y, mrShark.width / 2, mrShark.height };
-        struct Rectangle sharkBiteRec = { mrShark.position.x, mrShark.position.y, mrShark.width / 2, mrShark.height };
+        struct Rectangle sharkTailRec = { mrShark.position.x + (SharkImage.width * 2 / 2), mrShark.position.y, SharkImage.width * 2 / 2, SharkImage.height * 2 };
+        struct Rectangle sharkBiteRec = { mrShark.position.x, mrShark.position.y, SharkImage.width / 2, SharkImage.height * 2 };
         if (sharkDirection == -1){
-            sharkTailRec = (Rectangle){ mrShark.position.x, mrShark.position.y, mrShark.width / 2, mrShark.height };
-            sharkBiteRec = (Rectangle){ mrShark.position.x + (mrShark.width / 2), mrShark.position.y, mrShark.width / 2, mrShark.height };
+            sharkTailRec = (Rectangle){ mrShark.position.x, mrShark.position.y, SharkImage.width * 2 / 2, SharkImage.height * 2 };
+            sharkBiteRec = (Rectangle){ mrShark.position.x + (SharkImage.width * 2 / 2), mrShark.position.y, SharkImage.width * 2 / 2, SharkImage.height * 2 };
         }
 
         if (IsKeyPressed(KEY_P)) { if (pause) pause = false; else pause = true; }
@@ -234,15 +231,18 @@ int main(void)
                 }
             } else if (CheckCollisionRecs(playerRec, sharkTailRec)) {
                 mrShark.active = false;
+                mrShark.position.x = -10;
+                mrShark.position.y = -10;
+                score = score + 100;
             }
 
             Vector2 PlayerGoTo = { playerPosition.x, playerPosition.y };
             if (playerDirection == 1) {
                 //DrawTexture(FishTextures[0], playerPosition.x, playerPosition.y, YELLOW); // draw player
-                DrawTextureEx(FishTexturesLeft[0], PlayerGoTo, 0, 2, YELLOW);
+                DrawTextureEx(FishTexturesLeft[playerRank], PlayerGoTo, 0, 2, YELLOW);
             } 
             else {
-                DrawTextureEx(FishTexturesRight[0], PlayerGoTo, 0, 2, YELLOW);
+                DrawTextureEx(FishTexturesRight[playerRank], PlayerGoTo, 0, 2, YELLOW);
             }
 
             if (mrShark.active) {
@@ -259,10 +259,13 @@ int main(void)
                     if (CheckCollisionRecs(playerRec, FishRec)) {
                         if (playerRank >= creatureRank[creatures[i].type]) {
                             creatures[i].active = false;
+                            creatures[i].position.y = -10;
+                            creatures[i].position.x = -10;
                             score = score + 100;
                             if (score%1000 == 0){
                                 playerRank++;
                                 printf("player rank is now %i\n", playerRank);
+
                             }
                         } else {
                             lives--;
