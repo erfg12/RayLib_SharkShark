@@ -142,6 +142,7 @@ void FishSpawn() {
             if (creatures[pickCreature].type == 6 || creatures[pickCreature].type == 7) pickHeight = (float)screenHeight - 40;
             creatures[pickCreature].origin = (Vector2){ps,pickHeight};
             creatures[pickCreature].position = (Vector2){ps,pickHeight};
+            printf("DEBUG: Spawning Fish coords x:%f y:%f type:%i active:%i\n", ps, pickHeight, creatures[pickCreature].type, creatures[pickCreature].active);
         }
         FishSpawnTimer = 0;
     }
@@ -157,11 +158,12 @@ void FishMoveAndDeSpawn() {
             else if (creatures[i].origin.x >= (float)screenWidth - 40)
                 creatures[i].position.x = creatures[i].position.x - creatureSpeed[creatures[i].type];
             // de-spawn
-            if ((creatures[i].origin.x >= (float)screenWidth && creatures[i].position.x <= 0) ||
+            if ((creatures[i].origin.x > (float)screenWidth && creatures[i].position.x < 0) ||
                 (creatures[i].origin.x < 0 && creatures[i].position.x > (float)screenWidth )) {
                     creatures[i].position.x = -10;
                     creatures[i].position.y = -10;
                     creatures[i].active = false;
+                    printf("DEBUG: DE-Spawning Fish active:%i\n", creatures[i].active);
                 }
         }
     }
