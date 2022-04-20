@@ -24,6 +24,7 @@ typedef struct SeaCreature {
     bool active;
     int direction;
     int type; // 0-4 = fish ranked, 5 = seahorse, 6 = crab, 7 = lobster, 8 = jellyfish (use for creatureSize and creatureSpeed)
+    bool jump;
 } SeaCreature;
 
 int GetRandomNum(int min, int max)
@@ -51,7 +52,7 @@ int SharkSpawnTimer = 0;
 int sharkDirection = 1; // 1 = left, -1 = right
 bool pause, GameOver, playerDead = false;
 SeaCreature creatures[27];
-float creatureSpeed[9] = {1, 1.3, 1.5, 1.7, 2, 2, 2, 2, 2}; // use SC type to get speed
+float creatureSpeed[9] = {1, 1.3, 1.5, 1.7, 2, 0.8, 0.8, 2, 1.3}; // use SC type to get speed
 int creatureRank[9] = {1, 2, 3, 4, 5, 5, 5, 5, 6}; // use SC type to get rank. Rank determines what a creature can eat. (jellyfish are immune)
 
 void SetShark() {
@@ -77,8 +78,7 @@ void SetFish() {
         SeaCreature sc;
         sc.position = (Vector2) {0,0};
         sc.origin = (Vector2) {0,0};
-        if (t > 8)
-            t = 8;
+        if (t > 8) t = 8;
         sc.type = t;
         sc.active = false;
         creatures[i] = sc;
@@ -135,6 +135,7 @@ void FishSpawn() {
         pickCreature = GetRandomNum(0,26);
         if (!creatures[pickCreature].active){
             srand ( time(NULL) );
+            creatures[pickCreature].jump = false;
             creatures[pickCreature].active = true;
             int pickSide[2] = {20,(float)screenWidth - 20};
             float pickHeight = GetRandomNum(20,screenHeight - 50);
@@ -149,6 +150,16 @@ void FishSpawn() {
     FishSpawnTimer++;
 }
 
+void CrustJump(int CreatureID) {
+    if (creatures[CreatureID].type != 5 && creatures[CreatureID].type != 6) return; // only crustaceans
+    if (creatures[CreatureID].position.y > screenHeight - 128 && creatures[CreatureID].jump) // go up
+        creatures[CreatureID].position.y -= 2.0f;
+    else if (creatures[CreatureID].position.y <= screenHeight - 128 && creatures[CreatureID].jump) // stop going up
+        creatures[CreatureID].jump = false;
+    else if (creatures[CreatureID].position.y < screenHeight - 40 && !creatures[CreatureID].jump) // come back down
+        creatures[CreatureID].position.y += 2.0f;
+}
+
 void FishMoveAndDeSpawn() {
     for (int i = 0; i < 27; i++){
         if (creatures[i].active) {
@@ -157,6 +168,14 @@ void FishMoveAndDeSpawn() {
                 creatures[i].position.x = creatures[i].position.x + creatureSpeed[creatures[i].type];
             else if (creatures[i].origin.x == (float)screenWidth - 20)
                 creatures[i].position.x = creatures[i].position.x - creatureSpeed[creatures[i].type];
+            // crustacean jump
+            if (creatures[i].type == 5 || creatures[i].type == 6){
+                if (GetRandomNum(0,500) == 90) {
+                    creatures[i].jump = true;
+                    printf("DEBUG: JUMP");
+                }
+                CrustJump(i);
+            }
             // de-spawn
             if ((creatures[i].origin.x == ((float)screenWidth - 20) && creatures[i].position.x < 0) ||
                 (creatures[i].origin.x == 20 && creatures[i].position.x > (float)screenWidth )) {
@@ -185,7 +204,7 @@ int main(void)
     SetVars();
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
 
-    Texture2D FishTexturesRight[5] = { LoadTexture("resources/rank1.png"), LoadTexture("resources/rank2.png"), LoadTexture("resources/rank3.png"), LoadTexture("resources/rank4.png"), LoadTexture("resources/rank5.png") };
+    Texture2D FishTexturesRight[5] = { LoadTexture("./resources/rank1.png"), LoadTexture("resources/rank2.png"), LoadTexture("resources/rank3.png"), LoadTexture("resources/rank4.png"), LoadTexture("resources/rank5.png") };
     Image FishImagesLeft[5] = { LoadImage("resources/rank1.png"), LoadImage("resources/rank2.png"), LoadImage("resources/rank3.png"), LoadImage("resources/rank4.png"), LoadImage("resources/rank5.png") };
     ImageFlipHorizontal(&FishImagesLeft[0]);
     ImageFlipHorizontal(&FishImagesLeft[1]);
@@ -200,7 +219,10 @@ int main(void)
     Texture2D SharkDeadTexture = LoadTexture("resources/shark_dead.png");
     Texture2D SeaHorseTexture = LoadTexture("resources/seahorse.png");
     Texture2D CrabTexture = LoadTexture("resources/crab.png");
-    Texture2D LobsterTexture = LoadTexture("resources/lobster.png");
+    Texture2D LobsterTextureRight = LoadTexture("resources/lobster.png");
+    Image LobsterImageLeft = LoadImage("resources/lobster.png");
+    ImageFlipHorizontal(&LobsterImageLeft);
+    Texture2D LobsterTextureLeft = LoadTextureFromImage(LobsterImageLeft);
     Texture2D JellyfishTexture = LoadTexture("resources/jellyfish.png");
 
     // Main game loop
@@ -224,7 +246,7 @@ int main(void)
             if (IsKeyDown(KEY_RIGHT) && playerPosition.x < screenWidth && !playerDead) { playerPosition.x += 2.0f; playerDirection = -1; }
             if (IsKeyDown(KEY_LEFT) && playerPosition.x > 0 && !playerDead) { playerPosition.x -= 2.0f; playerDirection = 1; }
             if (IsKeyDown(KEY_UP) && playerPosition.y > 0 && !playerDead) playerPosition.y -= 2.0f;
-            if (IsKeyDown(KEY_DOWN) && playerPosition.y < screenHeight && !playerDead) playerPosition.y += 2.0f;
+            if (IsKeyDown(KEY_DOWN) && playerPosition.y < screenHeight - 32 && !playerDead) playerPosition.y += 2.0f;
             
             SharkRoam();
             FishSpawn();
@@ -295,16 +317,17 @@ int main(void)
 
                     if (creatures[i].type == 5)
                         DrawTextureEx(CrabTexture, (Vector2) { creatures[i].position.x, creatures[i].position.y }, 0, 2, YELLOW);
-                    else if (creatures[i].type == 6)
-                        DrawTextureEx(LobsterTexture, (Vector2) { creatures[i].position.x, creatures[i].position.y }, 0, 2, YELLOW);
-                    else if (creatures[i].type <= 4 && creatures[i].type >= 0) {
+                    else if (creatures[i].type == 6) {
+                        if (creatures[i].origin.x <= 20)
+                            DrawTextureEx(LobsterTextureLeft, (Vector2) { creatures[i].position.x, creatures[i].position.y }, 0, 3, YELLOW);
+                        else
+                            DrawTextureEx(LobsterTextureRight, (Vector2) { creatures[i].position.x, creatures[i].position.y }, 0, 3, YELLOW);
+                    } else if (creatures[i].type <= 4 && creatures[i].type >= 0) {
                         Vector2 GoTo = { creatures[i].position.x, creatures[i].position.y };
                         if (creatures[i].origin.x <= 20)
-                            DrawTextureEx(FishTexturesRight[creatures[i].type], GoTo, 0, 2, YELLOW);
-                            //DrawTexture(FishTextures[creatures[i].type], creatures[i].position.x, creatures[i].position.y, YELLOW); // RIGHT
+                            DrawTextureEx(FishTexturesRight[creatures[i].type], GoTo, 0, 2, YELLOW); // RIGHT
                         else
-                            DrawTextureEx(FishTexturesLeft[creatures[i].type], GoTo, 0, 2, YELLOW);
-                            //DrawTexture(FishTextures[creatures[i].type], creatures[i].position.x, creatures[i].position.y, YELLOW); // LEFT
+                            DrawTextureEx(FishTexturesLeft[creatures[i].type], GoTo, 0, 2, YELLOW); // LEFT
                     } else if (creatures[i].type == 7)
                         DrawTextureEx(SeaHorseTexture, (Vector2) { creatures[i].position.x, creatures[i].position.y }, 0, 2, YELLOW);
                     else if (creatures[i].type == 8)
