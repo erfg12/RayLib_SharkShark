@@ -49,6 +49,7 @@ int sharkBounces = 0;
 int sharkMaxBounces = 5;
 int score = 0;
 int SharkSpawnTimer = 0;
+int SharkHealth = 10;
 int sharkDirection = 1; // 1 = left, -1 = right
 bool pause, GameOver, playerDead = false;
 SeaCreature creatures[27];
@@ -63,11 +64,6 @@ void SetShark() {
 
     float sideX = (mrShark.objective.x - mrShark.position.x) / module;
     float sideY = (mrShark.objective.y - mrShark.position.y) / module;
-
-    if (mrShark.position.x <= 5)
-        sharkDirection = -1;
-    else
-        sharkDirection = 1;
 
     mrShark.speed = (Vector2){ sideX, sideY };
 }
@@ -98,6 +94,7 @@ void SetVars() {
     GameOver = false;
     lives = 5;
     SetShark();
+    sharkDirection = 1;
     SetFish();
     //printf("DEBUG: SETTING shark coords x:%f y:%f sx:%f sy:%f\n", mrShark.position.x, mrShark.position.y, mrShark.speed.x, mrShark.speed.y);
     //printf("DEBUG: SETTING player coords x:%f y:%f\n", playerPosition.x, playerPosition.y);
@@ -107,11 +104,24 @@ void SharkRoam() {
     if (mrShark.active)
     {
         mrShark.objective = playerPosition;
+
+        if (SharkHealth <= 0 && mrShark.position.x >= (float)screenWidth) {
+            mrShark.position.x = -10;
+            mrShark.position.y = -10;
+            mrShark.active = false;
+            score = score + 100;
+            return;
+        }
+
         mrShark.position.x += mrShark.speed.x;
         mrShark.position.y += mrShark.speed.y;
 
         if (mrShark.position.x <= 0 || mrShark.position.x >= (float)screenWidth - 20) {
             SetShark();
+            if (mrShark.position.x <= 5)
+                sharkDirection = -1;
+            else
+                sharkDirection = 1;
             if (sharkBounces == sharkMaxBounces) {
                 mrShark.position.x = -100;
                 mrShark.position.y = -100;
@@ -120,7 +130,7 @@ void SharkRoam() {
             sharkBounces++;
         }
     } else {
-        if (SharkSpawnTimer >= 600) {
+        if (SharkSpawnTimer >= 1200) {
             mrShark.active = true;
             mrShark.position = (Vector2){ (float)screenWidth - 20, 20 };
             SharkSpawnTimer = 0;
@@ -130,11 +140,13 @@ void SharkRoam() {
 }
 
 void FishSpawn() {
-    if (FishSpawnTimer >= 60){
+    if (FishSpawnTimer >= 120){
         int pickCreature = 0;
         pickCreature = GetRandomNum(0,26);
         if (!creatures[pickCreature].active){
             srand ( time(NULL) );
+            if (creatures[pickCreature].type == 8 && playerRank < 3) return; // no need to spawn jellyfish early in the game
+            if (creatures[pickCreature].type == 7 && playerRank < 2) return; // seahorses can wait a bit
             creatures[pickCreature].jump = false;
             creatures[pickCreature].active = true;
             int pickSide[2] = {20,(float)screenWidth - 20};
@@ -197,6 +209,13 @@ void PlayerBit() {
     }
 }
 
+void HurtShark() {
+    mrShark.speed = (Vector2){mrShark.position.x, mrShark.position.y}; // pause for a sec
+    SharkHealth--;
+    sharkDirection = sharkDirection * -1; // change direction
+    SetShark(); // reset exactly where he's headed
+}
+
 int main(void)
 {
     // Initialization
@@ -217,7 +236,10 @@ int main(void)
     ImageFlipHorizontal(&SharkImage);
     Texture2D SharkTextureLeft = LoadTextureFromImage(SharkImage);
     Texture2D SharkDeadTexture = LoadTexture("resources/shark_dead.png");
-    Texture2D SeaHorseTexture = LoadTexture("resources/seahorse.png");
+    Texture2D SeaHorseTextureLeft = LoadTexture("resources/seahorse.png");
+    Image SeaHorseImageRight = LoadImage("resources/seahorse.png");
+    ImageFlipHorizontal(&SeaHorseImageRight);
+    Texture2D SeaHorseTextureRight = LoadTextureFromImage(SeaHorseImageRight);
     Texture2D CrabTexture = LoadTexture("resources/crab.png");
     Texture2D LobsterTextureRight = LoadTexture("resources/lobster.png");
     Image LobsterImageLeft = LoadImage("resources/lobster.png");
@@ -264,31 +286,36 @@ int main(void)
                 DrawText("PAUSED\n\nPRESS P TO RESUME", screenWidth / 2 - 50, screenHeight / 2 - 50, 20, WHITE);
             if (playerDead)
                 DrawText("PLAYER DIED\n\nPRESS ENTER TO SPAWN", screenWidth / 2 - 50, screenHeight / 2 - 50, 20, WHITE);
-            if (CheckCollisionRecs(playerRec, sharkBiteRec)) {
+            
+            if (CheckCollisionRecs(playerRec, sharkBiteRec)) { // shark bit player
                 PlayerBit();
-            } else if (CheckCollisionRecs(playerRec, sharkTailRec)) {
-                mrShark.position.x = -10;
-                mrShark.position.y = -10;
-                mrShark.active = false;
-                score = score + 100;
+            } else if (CheckCollisionRecs(playerRec, sharkTailRec)) { // player bit shark on tail
+                HurtShark();
             }
 
+            // draw player fish
             Vector2 PlayerGoTo = { playerPosition.x, playerPosition.y };
             if (playerDirection == 1) {
-                //DrawTexture(FishTextures[0], playerPosition.x, playerPosition.y, YELLOW); // draw player
                 DrawTextureEx(FishTexturesLeft[playerRank], PlayerGoTo, 0, 2, YELLOW);
-            } 
-            else {
+            } else {
                 DrawTextureEx(FishTexturesRight[playerRank], PlayerGoTo, 0, 2, YELLOW);
             }
 
+            // draw shark
             if (mrShark.active) {
+                if (SharkHealth > 0) {
                     Vector2 GoTo = { mrShark.position.x, mrShark.position.y };
                     if (sharkDirection == 1) // left
                         DrawTextureEx(SharkTextureLeft, GoTo, 0, 4, YELLOW);
                     else // right
                         DrawTextureEx(SharkTexture, GoTo, 0, 4, YELLOW);
+                } else {
+                    Vector2 GoTo = { mrShark.position.x, screenHeight };
+                    DrawTextureEx(SharkDeadTexture, GoTo, 0, 4, YELLOW);
+                }
             }
+
+            // for each fish, check collisions and draw on screen
             for (int i = 0; i < 27; i++){
                 if (creatures[i].active){
                     if (creatures[i].type < 0 || creatures[i].type > 8) continue;
@@ -302,34 +329,38 @@ int main(void)
                             creatures[i].position.x = -10;
                             creatures[i].active = false;
                             score = score + 100;
-                            if (score%1000 == 0 && playerRank < 4 ){
+                            if (score % 1000 == 0 && playerRank < 4 ){
                                 playerRank++;
-                                printf("************** PLAYER RANK IS NOW %i ***************\n", playerRank);
+                                //printf("************** PLAYER RANK IS NOW %i ***************\n", playerRank);
                             }
                             else if (score % 1000 == 0 && playerRank >= 4) {
                                 lives++;
                             }
                         } else {
-                            printf("**************** BITTEN BY A FISH. X:%f Y:%f ACTIVE:%i TYPE:%i ********************\n", creatures[i].position.x, creatures[i].position.y, creatures[i].active, creatures[i].type);
+                            //printf("**************** BITTEN BY A FISH. X:%f Y:%f ACTIVE:%i TYPE:%i ********************\n", creatures[i].position.x, creatures[i].position.y, creatures[i].active, creatures[i].type);
                             PlayerBit();
                         }
                     }
 
                     if (creatures[i].type == 5)
-                        DrawTextureEx(CrabTexture, (Vector2) { creatures[i].position.x, creatures[i].position.y }, 0, 2, YELLOW);
+                        DrawTextureEx(CrabTexture, (Vector2) { creatures[i].position.x, creatures[i].position.y }, 0, 2.5, YELLOW);
                     else if (creatures[i].type == 6) {
                         if (creatures[i].origin.x <= 20)
-                            DrawTextureEx(LobsterTextureLeft, (Vector2) { creatures[i].position.x, creatures[i].position.y }, 0, 3, YELLOW);
+                            DrawTextureEx(LobsterTextureLeft, (Vector2) { creatures[i].position.x, creatures[i].position.y }, 0, 2.3, YELLOW);
                         else
-                            DrawTextureEx(LobsterTextureRight, (Vector2) { creatures[i].position.x, creatures[i].position.y }, 0, 3, YELLOW);
+                            DrawTextureEx(LobsterTextureRight, (Vector2) { creatures[i].position.x, creatures[i].position.y }, 0, 2.3, YELLOW);
                     } else if (creatures[i].type <= 4 && creatures[i].type >= 0) {
                         Vector2 GoTo = { creatures[i].position.x, creatures[i].position.y };
                         if (creatures[i].origin.x <= 20)
                             DrawTextureEx(FishTexturesRight[creatures[i].type], GoTo, 0, 2, YELLOW); // RIGHT
                         else
                             DrawTextureEx(FishTexturesLeft[creatures[i].type], GoTo, 0, 2, YELLOW); // LEFT
-                    } else if (creatures[i].type == 7)
-                        DrawTextureEx(SeaHorseTexture, (Vector2) { creatures[i].position.x, creatures[i].position.y }, 0, 2, YELLOW);
+                    } else if (creatures[i].type == 7) {
+                        if (creatures[i].origin.x <= 20)
+                            DrawTextureEx(SeaHorseTextureLeft, (Vector2) { creatures[i].position.x, creatures[i].position.y }, 0, 2.2, YELLOW);
+                        else
+                            DrawTextureEx(SeaHorseTextureRight, (Vector2) { creatures[i].position.x, creatures[i].position.y }, 0, 2.2, YELLOW);
+                    }
                     else if (creatures[i].type == 8)
                         DrawTextureEx(JellyfishTexture, (Vector2) { creatures[i].position.x, creatures[i].position.y }, 0, 4, YELLOW);
                 }
