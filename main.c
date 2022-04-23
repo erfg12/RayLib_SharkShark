@@ -103,16 +103,17 @@ void SetVars() {
 }
 
 void HurtShark() {
-    if (!sharkBitten) return;
+    if (!sharkBitten || SharkHealth <= 0) return;
     printf("DEBUG: Shark was bitten. Timer: %i\n", SharkHurtTimer);
     mrShark.position = (Vector2){ mrShark.position.x, mrShark.position.y };
     mrShark.objective = (Vector2){ mrShark.position.x, mrShark.position.y }; // pause for a sec
-    if (SharkHurtTimer >= 100) {
+    if (SharkHurtTimer >= 60) {
         SharkHealth--;
         sharkDirection = sharkDirection * -1; // change direction
         SetShark(); // reset exactly where he's headed
         sharkBitten = false;
         SharkHurtTimer = 0;
+        return;
     }
     SharkHurtTimer++;
 }
@@ -122,9 +123,10 @@ void SharkRoam() {
     {
         mrShark.objective = playerPosition;
 
-        if (SharkHealth <= 0 && mrShark.position.x >= (float)screenWidth) {
-            mrShark.position.x = -10;
-            mrShark.position.y = -10;
+        if (SharkHealth <= 0 && mrShark.position.y >= (float)screenHeight) {
+            printf("************* SHARK DIED **************\n");
+            mrShark.position.x = -100;
+            mrShark.position.y = -100;
             mrShark.active = false;
             score = score + 100;
             return;
@@ -132,11 +134,15 @@ void SharkRoam() {
 
         HurtShark();
         if (sharkBitten) return;
+        if (SharkHealth > 0) {
+            mrShark.position.x += mrShark.speed.x;
+            mrShark.position.y += mrShark.speed.y;
+        } else {
+            mrShark.position.y++;
+            return;
+        }
 
-        mrShark.position.x += mrShark.speed.x;
-        mrShark.position.y += mrShark.speed.y;
-
-        if (mrShark.position.x <= 0 || mrShark.position.x >= (float)screenWidth - 20) {
+        if (mrShark.position.x <= -20 || mrShark.position.x >= (float)screenWidth - 20 || mrShark.position.y <= -20 || mrShark.position.y >= (float)screenHeight - 20) {
             SetShark();
             if (mrShark.position.x <= 5)
                 sharkDirection = -1;
@@ -150,11 +156,14 @@ void SharkRoam() {
             sharkBounces++;
         }
     } else {
-        if (SharkSpawnTimer >= 1200) {
+        if (SharkSpawnTimer >= 900) { // 15 seconds
+            SharkHealth = 10;
+            sharkDirection = 1;
             mrShark.active = true;
             mrShark.position = (Vector2){ (float)screenWidth - 20, 20 };
             SharkSpawnTimer = 0;
         }
+        printf("DEBUG: SharkSpawnTimer: %i\n", SharkSpawnTimer);
         SharkSpawnTimer++;
     }
 }
@@ -267,7 +276,7 @@ int main(void)
 
         // these should flip depending on which direction shark is facing
         struct Rectangle sharkTailRec = { mrShark.position.x + (SharkImage.width * 4 / 2), mrShark.position.y, SharkImage.width * 4 / 2, SharkImage.height * 4 };
-        struct Rectangle sharkBiteRec = { mrShark.position.x, mrShark.position.y, SharkImage.width / 2, SharkImage.height * 4 };
+        struct Rectangle sharkBiteRec = { mrShark.position.x, mrShark.position.y, SharkImage.width * 4 / 2, SharkImage.height * 4 };
         if (sharkDirection == -1){
             sharkTailRec = (Rectangle){ mrShark.position.x, mrShark.position.y, SharkImage.width * 4 / 2, SharkImage.height * 4 };
             sharkBiteRec = (Rectangle){ mrShark.position.x + (SharkImage.width * 4 / 2), mrShark.position.y, SharkImage.width * 4 / 2, SharkImage.height * 4 };
@@ -300,31 +309,34 @@ int main(void)
             if (playerDead)
                 DrawText("PLAYER DIED\n\nPRESS ENTER TO SPAWN", screenWidth / 2 - 50, screenHeight / 2 - 50, 20, WHITE);
             
-            if (CheckCollisionRecs(playerRec, sharkBiteRec)) { // shark bit player
+            if (CheckCollisionRecs(playerRec, sharkBiteRec) && SharkHealth > 0) { // shark bit player
                 PlayerBit();
-            } else if (CheckCollisionRecs(playerRec, sharkTailRec)) { // player bit shark on tail
+            } else if (CheckCollisionRecs(playerRec, sharkTailRec) && SharkHealth > 0) { // player bit shark on tail
                 sharkBitten = true;
             }
 
             // draw player fish
             Vector2 PlayerGoTo = { playerPosition.x, playerPosition.y };
             if (playerDirection == 1) {
-                DrawTextureEx(FishTexturesLeft[playerRank], PlayerGoTo, 0, 2, YELLOW);
+                DrawTextureEx(FishTexturesLeft[playerRank], PlayerGoTo, 0, 2, WHITE);
             } else {
-                DrawTextureEx(FishTexturesRight[playerRank], PlayerGoTo, 0, 2, YELLOW);
+                DrawTextureEx(FishTexturesRight[playerRank], PlayerGoTo, 0, 2, WHITE);
             }
 
             // draw shark
             if (mrShark.active) {
+                Vector2 GoTo = { mrShark.position.x, mrShark.position.y };
                 if (SharkHealth > 0) {
-                    Vector2 GoTo = { mrShark.position.x, mrShark.position.y };
-                    if (sharkDirection == 1) // left
-                        DrawTextureEx(SharkTextureLeft, GoTo, 0, 4, YELLOW);
-                    else // right
-                        DrawTextureEx(SharkTexture, GoTo, 0, 4, YELLOW);
+                    if (sharkDirection == 1) { // left
+                        if (SharkHurtTimer%10 && SharkHurtTimer > 0) DrawTextureEx(SharkTextureLeft, GoTo, 0, 4, RED);
+                        else DrawTextureEx(SharkTextureLeft, GoTo, 0, 4, YELLOW);
+                    }
+                    else { // right
+                        if (SharkHurtTimer%10 && SharkHurtTimer > 0) DrawTextureEx(SharkTexture, GoTo, 0, 4, RED);
+                        else DrawTextureEx(SharkTexture, GoTo, 0, 4, YELLOW);
+                    }
                 } else {
-                    Vector2 GoTo = { mrShark.position.x, screenHeight };
-                    DrawTextureEx(SharkDeadTexture, GoTo, 0, 4, YELLOW);
+                    DrawTextureEx(SharkDeadTexture, GoTo, 0, 4, BLACK);
                 }
             }
 
