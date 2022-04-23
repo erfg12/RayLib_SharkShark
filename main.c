@@ -51,6 +51,7 @@ int score = 0;
 int SharkSpawnTimer = 0;
 int SharkHurtTimer = 0;
 int SharkHealth = 10;
+bool LeftClick = false;
 int sharkDirection = 1; // 1 = left, -1 = right
 bool pause, GameOver, playerDead, sharkBitten = false;
 SeaCreature creatures[27];
@@ -272,6 +273,7 @@ int main(void)
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
+
         struct Rectangle playerRec = { playerPosition.x, playerPosition.y, 16, 16 };
 
         // these should flip depending on which direction shark is facing
@@ -282,11 +284,13 @@ int main(void)
             sharkBiteRec = (Rectangle){ mrShark.position.x + (SharkImage.width * 4 / 2), mrShark.position.y, SharkImage.width * 4 / 2, SharkImage.height * 4 };
         }
 
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) LeftClick = true;
         if (IsKeyPressed(KEY_P)) { if (pause) pause = false; else pause = true; }
         if (IsKeyPressed(KEY_ENTER) && GameOver) { SetVars(); printf("restarting game"); }
         if (IsKeyPressed(KEY_ENTER) && playerDead && !pause && !GameOver) { playerDead = false; playerPosition.x = (float)screenWidth / 2; playerPosition.y = (float)screenHeight / 2; }
 
         if (!pause && !GameOver) {
+            if (LeftClick) { playerPosition.x += GetMousePosition().x; playerPosition.y += GetMousePosition().y; if (playerPosition.x == GetMousePosition().x && playerPosition.y == GetMousePosition().y) LeftClick = false; }
             if (IsKeyDown(KEY_RIGHT) && playerPosition.x < screenWidth && !playerDead) { playerPosition.x += 2.0f; playerDirection = -1; }
             if (IsKeyDown(KEY_LEFT) && playerPosition.x > 0 && !playerDead) { playerPosition.x -= 2.0f; playerDirection = 1; }
             if (IsKeyDown(KEY_UP) && playerPosition.y > 0 && !playerDead) playerPosition.y -= 2.0f;
