@@ -49,9 +49,10 @@ int sharkBounces = 0;
 int sharkMaxBounces = 5;
 int score = 0;
 int SharkSpawnTimer = 0;
+int SharkHurtTimer = 0;
 int SharkHealth = 10;
 int sharkDirection = 1; // 1 = left, -1 = right
-bool pause, GameOver, playerDead = false;
+bool pause, GameOver, playerDead, sharkBitten = false;
 SeaCreature creatures[27];
 float creatureSpeed[9] = {1, 1.3, 1.5, 1.7, 2, 0.8, 0.8, 2, 1.3}; // use SC type to get speed
 int creatureRank[9] = {1, 2, 3, 4, 5, 5, 5, 5, 6}; // use SC type to get rank. Rank determines what a creature can eat. (jellyfish are immune)
@@ -66,6 +67,7 @@ void SetShark() {
     float sideY = (mrShark.objective.y - mrShark.position.y) / module;
 
     mrShark.speed = (Vector2){ sideX, sideY };
+    printf("DEBUG: Resetting shark\n");
 }
 
 void SetFish() {
@@ -100,6 +102,21 @@ void SetVars() {
     //printf("DEBUG: SETTING player coords x:%f y:%f\n", playerPosition.x, playerPosition.y);
 }
 
+void HurtShark() {
+    if (!sharkBitten) return;
+    printf("DEBUG: Shark was bitten. Timer: %i\n", SharkHurtTimer);
+    mrShark.position = (Vector2){ mrShark.position.x, mrShark.position.y };
+    mrShark.objective = (Vector2){ mrShark.position.x, mrShark.position.y }; // pause for a sec
+    if (SharkHurtTimer >= 100) {
+        SharkHealth--;
+        sharkDirection = sharkDirection * -1; // change direction
+        SetShark(); // reset exactly where he's headed
+        sharkBitten = false;
+        SharkHurtTimer = 0;
+    }
+    SharkHurtTimer++;
+}
+
 void SharkRoam() {
     if (mrShark.active)
     {
@@ -112,6 +129,9 @@ void SharkRoam() {
             score = score + 100;
             return;
         }
+
+        HurtShark();
+        if (sharkBitten) return;
 
         mrShark.position.x += mrShark.speed.x;
         mrShark.position.y += mrShark.speed.y;
@@ -184,7 +204,7 @@ void FishMoveAndDeSpawn() {
             if (creatures[i].type == 5 || creatures[i].type == 6){
                 if (GetRandomNum(0,500) == 90) {
                     creatures[i].jump = true;
-                    printf("DEBUG: JUMP");
+                    //printf("DEBUG: JUMP\n");
                 }
                 CrustJump(i);
             }
@@ -207,13 +227,6 @@ void PlayerBit() {
     if (lives < 0) {
         GameOver = true;
     }
-}
-
-void HurtShark() {
-    mrShark.speed = (Vector2){mrShark.position.x, mrShark.position.y}; // pause for a sec
-    SharkHealth--;
-    sharkDirection = sharkDirection * -1; // change direction
-    SetShark(); // reset exactly where he's headed
 }
 
 int main(void)
@@ -290,7 +303,7 @@ int main(void)
             if (CheckCollisionRecs(playerRec, sharkBiteRec)) { // shark bit player
                 PlayerBit();
             } else if (CheckCollisionRecs(playerRec, sharkTailRec)) { // player bit shark on tail
-                HurtShark();
+                sharkBitten = true;
             }
 
             // draw player fish
