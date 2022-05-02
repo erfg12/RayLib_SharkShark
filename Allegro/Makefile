@@ -5,4 +5,4 @@ SRC = main.c ../shared.c
 
 all: main.c ../shared.c
 	@echo BUILD... sharkshark.exe 
-	gcc $(CFLAGS) $(LDFLAGS) $(SRC) -o sharkshark.exe -std=c11 -lalleg
+	gcc $(CFLAGS) $(LDFLAGS) $(SRC) -o shark.exe -std=c11 -lalleg
