@@ -1,5 +1,6 @@
 allegro
 djgpp
+djgpp_linux
 dosbox
 tools
 djgpp.bat

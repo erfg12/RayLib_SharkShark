@@ -1,1 +1,4 @@
+export PATH=$(pwd)/djgpp_linux/i586-pc-msdosdjgpp/bin/:$(pwd)/djgpp_linux/bin/:$PATH
+export GCC_EXEC_PREFIX=$(pwd)/djgpp_linux/lib/gcc/
+export DJDIR=$(pwd)/djgpp_linux/i586-pc-msdosdjgpp
 export DJGPP_GCC=$(pwd)/djgpp_linux/bin/i586-pc-msdosdjgpp-gcc
