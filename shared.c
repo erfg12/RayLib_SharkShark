@@ -5,6 +5,9 @@
 
 #include "shared.h"
 
+float creatureSpeed[9] = { 1, 1.3, 1.5, 1.7, 2, 0.8, 0.8, 2, 1.3 }; // use SC type to get speed
+int creatureRank[9] = { 1, 2, 3, 4, 5, 5, 5, 5, 6 }; // use SC type to get rank. Rank determines what a creature can eat. (jellyfish are immune)
+
 int GetRandomNum(int min, int max)
 {
     int range, result, cutoff;
@@ -54,6 +57,18 @@ void SetVars(float ScreenWidth, float ScreenHeight) {
     PausedGame = 0;
     GameOver = 0;
     lives = 5;
+    playerDirection = 1;
+    playerDead = 0;
+    FishSpawnTimer = 0;
+    sharkBounces = 0;
+    sharkMaxBounces = 5;
+    SharkSpawnTimer = 0;
+    SharkHurtTimer = 0;
+    SharkHealth = 10;
+    LeftClick = 0;
+    sharkDirection = 1;
+    sharkBitten = 0;
+
     SetShark();
     sharkDirection = 1;
     SetFish();

@@ -1,8 +1,6 @@
 #ifndef SHARED_H_   /* Include guard */
 #define SHARED_H_
 
-#pragma once
-
 typedef struct Vec2 {
     float x;
     float y;
@@ -26,26 +24,26 @@ typedef struct SeaCreature {
 } SeaCreature;
 
 Vec2 playerPosition;
-int lives = 5;
-int playerRank = 0;
-int playerDirection = 1; // 1 = left, -1 = right
-int FishSpawnTimer = 0;
+int lives;
+int playerRank;
+int playerDirection; // 1 = left, -1 = right
+int FishSpawnTimer;
 Shark mrShark;
-int sharkBounces = 0;
-int sharkMaxBounces = 5;
-int score = 0;
-int SharkSpawnTimer = 0;
-int SharkHurtTimer = 0;
-int SharkHealth = 10;
-int LeftClick = 0; // bool
-int sharkDirection = 1; // 1 = left, -1 = right
-int PausedGame = 0;
-int GameOver = 0;
-int playerDead = 0;
-int sharkBitten = 0; // bool
+int sharkBounces;
+int sharkMaxBounces;
+int score;
+int SharkSpawnTimer;
+int SharkHurtTimer;
+int SharkHealth;
+int LeftClick; // bool
+int sharkDirection; // 1 = left, -1 = right
+int PausedGame;
+int GameOver;
+int playerDead;
+int sharkBitten; // bool
 SeaCreature creatures[27];
-float creatureSpeed[9] = { 1, 1.3, 1.5, 1.7, 2, 0.8, 0.8, 2, 1.3 }; // use SC type to get speed
-int creatureRank[9] = { 1, 2, 3, 4, 5, 5, 5, 5, 6 }; // use SC type to get rank. Rank determines what a creature can eat. (jellyfish are immune)
+extern int creatureRank[9];
+extern float creatureSpeed[9];
 
 int GetRandomNum(int min, int max);
 void SetShark();
@@ -58,4 +56,4 @@ void CrustJump(int CreatureID, float ScreenHeight);
 void FishMoveAndDeSpawn(float ScreenWidth, float ScreenHeight);
 void PlayerBit();
 
-#endif // SHARED_H_
+#endif

@@ -1,5 +1,5 @@
-CFLAGS = -I. -I..\\..\allegro\include -I..
-LDFLAGS = -L..\..\allegro\lib
+CFLAGS = -I. -I.\allegro\include -I..
+LDFLAGS = -L.\allegro\lib
 
 SRC = main.c ../shared.c
 
