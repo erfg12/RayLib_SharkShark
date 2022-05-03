@@ -19,12 +19,9 @@ BITMAP *lobster;
 BITMAP *crab;
 BITMAP *shark_dead;
 BITMAP *seahorse;
+BITMAP *jellyfish;
 
-BITMAP *fish1;
-BITMAP *fish2;
-BITMAP *fish3;
-BITMAP *fish4;
-BITMAP *fish5;
+BITMAP* fish[5];
 
 const int screenWidth = 320;
 const int screenHeight = 200;
@@ -35,6 +32,16 @@ typedef struct Rectangle {
     float w;
     float h;
 } Rectangle;
+
+ volatile int ticks = 0;
+
+void deinit() {
+    clear_keybuf();
+}
+
+ void ticker(){
+   ticks++;
+ }
 
 void abort_on_error(const char *message){
 	 if (screen != NULL){
@@ -57,6 +64,14 @@ int CheckCollisionRecs(Rectangle r1, Rectangle r2) {
 void init() {
     int depth, res;
     allegro_init();
+
+   /* SETUP THE MAIN TIMER TO 60 FPS */
+   install_timer(); //Setup the timer
+   LOCK_VARIABLE(ticks); //Set timer variable
+   //LOCK_FUNCTION(ticker); //Set timer function
+   ticker();
+   install_int_ex(ticker, BPS_TO_TIMER(60));
+
     depth = desktop_color_depth();
     if (depth == 0) depth = 32;
     set_color_depth(depth);
@@ -80,10 +95,6 @@ void init() {
     install_keyboard();
 }
 
-void deinit() {
-    clear_keybuf();
-}
-
 int main(void)
 {
     init();
@@ -94,17 +105,20 @@ int main(void)
     seahorse = load_bitmap("assets/seahorse.bmp", NULL);
     lobster = load_bitmap("assets/lobster.bmp", NULL);
     crab = load_bitmap("assets/crab.bmp", NULL);
-    fish1 = load_bitmap("assets/rank1.bmp", NULL);
-    fish2 = load_bitmap("assets/rank2.bmp", NULL);
-    fish3 = load_bitmap("assets/rank3.bmp", NULL);
-    fish4 = load_bitmap("assets/rank4.bmp", NULL);
-    fish5 = load_bitmap("assets/rank5.bmp", NULL);
-
-    //set_palette(desktop_palette);
-
-    //clear_to_color(screen2, makecol(0, 0, 255)); 
+    fish[0] = load_bitmap("assets/rank1.bmp", NULL);
+    fish[1] = load_bitmap("assets/rank2.bmp", NULL);
+    fish[2] = load_bitmap("assets/rank3.bmp", NULL);
+    fish[3] = load_bitmap("assets/rank4.bmp", NULL);
+    fish[4] = load_bitmap("assets/rank5.bmp", NULL);
 
     while (!key[KEY_ESC]) {
+        while(ticks == 0) {
+            rest(1); //Wait for a full tick
+        }
+
+        while(ticks > 0) { // limit game to 60 fps
+         int old_ticks = ticks;
+
         clear_bitmap(screen2);
         rectfill(screen2,0,0,screen->w,screen->h, makecol(0,0,255));
         
@@ -152,28 +166,28 @@ int main(void)
             // draw player fish
             Vec2 PlayerGoTo = { playerPosition.x, playerPosition.y };
             if (playerDirection == 1) { // left
-                draw_sprite(screen2, fish1, PlayerGoTo.x, PlayerGoTo.y); // CRASHES
+                masked_blit(fish[playerRank], screen2, 0, 0, playerPosition.x, playerPosition.y, 16, 16);
             } else { // right
-                draw_sprite(screen2, fish1, PlayerGoTo.x, PlayerGoTo.y);
+                masked_blit(fish[playerRank], screen2, 16, 0, playerPosition.x, playerPosition.y, 16, 16);
             }
-        /*
+        
             // draw shark
             if (mrShark.active) {
-                Vector2 GoTo = { mrShark.position.x, mrShark.position.y };
+                Vec2 GoTo = { mrShark.position.x, mrShark.position.y };
                 if (SharkHealth > 0) {
                     if (sharkDirection == 1) { // left
-                        if (SharkHurtTimer%10 && SharkHurtTimer > 0) DrawTextureEx(SharkTextureLeft, GoTo, 0, 4, RED);
-                        else DrawTextureEx(SharkTextureLeft, GoTo, 0, 4, YELLOW);
+                        if (SharkHurtTimer%10 && SharkHurtTimer > 0) masked_blit(shark, screen2, 32, 0, GoTo.x, GoTo.y, 32, 16);
+                        else masked_blit(shark, screen2, 32, 0, GoTo.x, GoTo.y, 32, 16);
                     }
                     else { // right
-                        if (SharkHurtTimer%10 && SharkHurtTimer > 0) DrawTextureEx(SharkTexture, GoTo, 0, 4, RED);
-                        else DrawTextureEx(SharkTexture, GoTo, 0, 4, YELLOW);
+                        if (SharkHurtTimer%10 && SharkHurtTimer > 0) masked_blit(shark, screen2, 0, 0, GoTo.x, GoTo.y, 32, 16);
+                        else masked_blit(shark, screen2, 0, 0, GoTo.x, GoTo.y, 32, 16);
                     }
                 } else {
-                    DrawTextureEx(SharkDeadTexture, GoTo, 0, 4, BLACK);
+                    draw_sprite(screen2, shark_dead, GoTo.x, GoTo.y);
                 }
             }
-
+        
             // for each fish, check collisions and draw on screen
             for (int i = 0; i < 27; i++){
                 if (creatures[i].active){
@@ -186,7 +200,7 @@ int main(void)
                         if ((playerRank + 1) >= creatureRank[creatures[i].type]) {
                             creatures[i].position.y = -10;
                             creatures[i].position.x = -10;
-                            creatures[i].active = false;
+                            creatures[i].active = 0;
                             score = score + 100;
                             if (score % 1000 == 0 && playerRank < 4 ){
                                 playerRank++;
@@ -201,31 +215,33 @@ int main(void)
                         }
                     }
 
-                    if (creatures[i].type == 5)
-                        DrawTextureEx(CrabTexture, (Vector2) { creatures[i].position.x, creatures[i].position.y }, 0, 2.5, YELLOW);
-                    else if (creatures[i].type == 6) {
-                        if (creatures[i].origin.x <= 20)
-                            DrawTextureEx(LobsterTextureLeft, (Vector2) { creatures[i].position.x, creatures[i].position.y }, 0, 2.3, YELLOW);
-                        else
-                            DrawTextureEx(LobsterTextureRight, (Vector2) { creatures[i].position.x, creatures[i].position.y }, 0, 2.3, YELLOW);
+                    if (creatures[i].type == 5) {
+                        masked_blit(crab, screen2, 0, 0, creatures[i].position.x, creatures[i].position.y, 16, 16);
+                    } else if (creatures[i].type == 6) {
+                        if (creatures[i].origin.x <= 20) // left
+                            masked_blit(lobster, screen2, 48, 0, creatures[i].position.x, creatures[i].position.y, 16, 16);
+                        else // right
+                            masked_blit(lobster, screen2, 0, 0, creatures[i].position.x, creatures[i].position.y, 16, 16);
                     } else if (creatures[i].type <= 4 && creatures[i].type >= 0) {
-                        Vector2 GoTo = { creatures[i].position.x, creatures[i].position.y };
-                        if (creatures[i].origin.x <= 20)
-                            DrawTextureEx(FishTexturesRight[creatures[i].type], GoTo, 0, 2, YELLOW); // RIGHT
-                        else
-                            DrawTextureEx(FishTexturesLeft[creatures[i].type], GoTo, 0, 2, YELLOW); // LEFT
+                        Vec2 GoTo = { creatures[i].position.x, creatures[i].position.y };
+                        if (creatures[i].origin.x <= 20) // left
+                            masked_blit(fish[creatures[i].type], screen2, 0, 0, creatures[i].position.x, creatures[i].position.y, 16, 16);
+                        else // right
+                            masked_blit(fish[creatures[i].type], screen2, 16, 0, creatures[i].position.x, creatures[i].position.y, 16, 16);
                     } else if (creatures[i].type == 7) {
                         if (creatures[i].origin.x <= 20)
-                            DrawTextureEx(SeaHorseTextureLeft, (Vector2) { creatures[i].position.x, creatures[i].position.y }, 0, 2.2, YELLOW);
+                            masked_blit(seahorse, screen2, 48, 0, creatures[i].position.x, creatures[i].position.y, 16, 16);
                         else
-                            DrawTextureEx(SeaHorseTextureRight, (Vector2) { creatures[i].position.x, creatures[i].position.y }, 0, 2.2, YELLOW);
+                            masked_blit(seahorse, screen2, 0, 0, creatures[i].position.x, creatures[i].position.y, 16, 16);
                     }
                     else if (creatures[i].type == 8)
-                        DrawTextureEx(JellyfishTexture, (Vector2) { creatures[i].position.x, creatures[i].position.y }, 0, 4, YELLOW);
+                        masked_blit(jellyfish, screen2, 0, 0, creatures[i].position.x, creatures[i].position.y, 16, 16);
                 }
-            }*/
+            }
             blit(screen2, screen, 0, 0, 0, 0, screen->w, screen->h);
-
+            ticks--;
+            if(old_ticks <= ticks) break; //Time up! Beggin drawing
+        }
             //release_screen();
     }
 
