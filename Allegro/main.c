@@ -117,39 +117,39 @@ int main(void)
         }
 
         while(ticks > 0) { // limit game to 60 fps
-         int old_ticks = ticks;
+            int old_ticks = ticks;
 
-        clear_bitmap(screen2);
-        rectfill(screen2,0,0,screen->w,screen->h, makecol(0,0,255));
-        
-        struct Rectangle playerRec = { playerPosition.x, playerPosition.y, 16, 16 };
-
-        // these should flip depending on which direction shark is facing
-        struct Rectangle sharkTailRec = { mrShark.position.x + (32 * 4 / 2), mrShark.position.y, 32 * 4 / 2, 16 * 4 };
-        struct Rectangle sharkBiteRec = { mrShark.position.x, mrShark.position.y, 32 * 4 / 2, 16 * 4 };
-        if (sharkDirection == -1){
-            sharkTailRec = (Rectangle){ mrShark.position.x, mrShark.position.y, 32 * 4 / 2, 16 * 4 };
-            sharkBiteRec = (Rectangle){ mrShark.position.x + (32 * 4 / 2), mrShark.position.y, 32 * 4 / 2, 16 * 4 };
-        }
-
-        if (key[KEY_P]) { if (PausedGame == 1) PausedGame = 0; else PausedGame = 1; }
-        if ((key[KEY_ENTER]) && GameOver == 1) { SetVars(screenWidth, screenHeight); printf("restarting game"); }
-        if (key[KEY_ENTER] && playerDead == 1 && PausedGame == 0 && GameOver == 0) { playerDead = 0; playerPosition.x = (float)screenWidth / 2; playerPosition.y = (float)screenHeight / 2; }
-
-        if (PausedGame == 0 && GameOver == 0) {
-            if (key[KEY_RIGHT] && playerPosition.x < screenWidth && playerDead == 0) { playerPosition.x += 2.0f; playerDirection = -1; }
-            if (key[KEY_LEFT] && playerPosition.x > 0 && playerDead == 0) { playerPosition.x -= 2.0f; playerDirection = 1; }
-            if (key[KEY_UP] && playerPosition.y > 0 && playerDead == 0) playerPosition.y -= 2.0f;
-            if (key[KEY_DOWN] && playerPosition.y < screenHeight - 32 && playerDead == 0) playerPosition.y += 2.0f;
+            clear_bitmap(screen2);
+            rectfill(screen2,0,0,screen->w,screen->h, makecol(0,0,255));
             
-            SharkRoam(screenWidth, screenHeight);
-            FishSpawn(screenWidth, screenHeight);
-            FishMoveAndDeSpawn(screenWidth, screenHeight);
-        }
+            struct Rectangle playerRec = { playerPosition.x, playerPosition.y, 16, 16 };
 
-        // DRAWING
-        textprintf_ex(screen2, font, 10, 10, makecol(255,255,255), -1, "SCORE %4i", score);
-        textprintf_ex(screen2, font, (float)screenWidth-100, 10, makecol(255,255,255), -1, "%4i LIVES", lives);
+            // these should flip depending on which direction shark is facing
+            struct Rectangle sharkTailRec = { mrShark.position.x + (32 * 4 / 2), mrShark.position.y, 32 * 4 / 2, 16 * 4 };
+            struct Rectangle sharkBiteRec = { mrShark.position.x, mrShark.position.y, 32 * 4 / 2, 16 * 4 };
+            if (sharkDirection == -1){
+                sharkTailRec = (Rectangle){ mrShark.position.x, mrShark.position.y, 32 * 4 / 2, 16 * 4 };
+                sharkBiteRec = (Rectangle){ mrShark.position.x + (32 * 4 / 2), mrShark.position.y, 32 * 4 / 2, 16 * 4 };
+            }
+
+            if (key[KEY_P]) { if (PausedGame == 1) PausedGame = 0; else PausedGame = 1; }
+            if ((key[KEY_ENTER]) && GameOver == 1) { SetVars(screenWidth, screenHeight); printf("restarting game"); }
+            if (key[KEY_ENTER] && playerDead == 1 && PausedGame == 0 && GameOver == 0) { playerDead = 0; playerPosition.x = (float)screenWidth / 2; playerPosition.y = (float)screenHeight / 2; }
+
+            if (PausedGame == 0 && GameOver == 0) {
+                if (key[KEY_RIGHT] && playerPosition.x < screenWidth && playerDead == 0) { playerPosition.x += 2.0f; playerDirection = -1; }
+                if (key[KEY_LEFT] && playerPosition.x > 0 && playerDead == 0) { playerPosition.x -= 2.0f; playerDirection = 1; }
+                if (key[KEY_UP] && playerPosition.y > 0 && playerDead == 0) playerPosition.y -= 2.0f;
+                if (key[KEY_DOWN] && playerPosition.y < screenHeight - 32 && playerDead == 0) playerPosition.y += 2.0f;
+                
+                SharkRoam(screenWidth, screenHeight);
+                FishSpawn(screenWidth, screenHeight);
+                FishMoveAndDeSpawn(screenWidth, screenHeight);
+            }
+
+            // DRAWING
+            textprintf_ex(screen2, font, 10, 10, makecol(255,255,255), -1, "SCORE %4i", score);
+            textprintf_ex(screen2, font, (float)screenWidth-100, 10, makecol(255,255,255), -1, "%4i LIVES", lives);
             if (GameOver == 1)
                 textprintf_ex(screen2, font, 10, screenHeight / 2 - 50, makecol(255,255,255), -1, "GAME OVER! YOUR SCORE: %4i - PRESS ENTER TO RESTART GAME", score);
             if (PausedGame == 1)
@@ -224,9 +224,9 @@ int main(void)
                             masked_blit(lobster, screen2, 0, 0, creatures[i].position.x, creatures[i].position.y, 16, 16);
                     } else if (creatures[i].type <= 4 && creatures[i].type >= 0) {
                         Vec2 GoTo = { creatures[i].position.x, creatures[i].position.y };
-                        if (creatures[i].origin.x <= 20) // left
+                        if (creatures[i].origin.x <= 20) // left going right
                             masked_blit(fish[creatures[i].type], screen2, 0, 0, creatures[i].position.x, creatures[i].position.y, 16, 16);
-                        else // right
+                        else // right going left
                             masked_blit(fish[creatures[i].type], screen2, 16, 0, creatures[i].position.x, creatures[i].position.y, 16, 16);
                     } else if (creatures[i].type == 7) {
                         if (creatures[i].origin.x <= 20)
@@ -242,7 +242,6 @@ int main(void)
             ticks--;
             if(old_ticks <= ticks) break; //Time up! Beggin drawing
         }
-            //release_screen();
     }
 
     deinit();

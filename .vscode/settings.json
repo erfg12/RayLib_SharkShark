@@ -1,5 +1,6 @@
 {
     "files.associations": {
         "xiosbase": "c"
-    }
+    },
+    "cmake.configureOnOpen": false
 }

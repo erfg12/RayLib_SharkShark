@@ -46,6 +46,7 @@ void SetFish() {
 }
 
 void SetVars(float ScreenWidth, float ScreenHeight) {
+    srand(time(NULL));
     LeftClick = 0;
     score = 0;
     playerRank = 0;
@@ -149,7 +150,6 @@ void FishSpawn(float ScreenWidth, float ScreenHeight) {
         int pickCreature = 0;
         pickCreature = GetRandomNum(0, 26);
         if (!creatures[pickCreature].active) {
-            srand(time(NULL));
             if (creatures[pickCreature].type == 8 && playerRank < 3) return; // no need to spawn jellyfish early in the game
             if (creatures[pickCreature].type == 7 && playerRank < 2) return; // seahorses can wait a bit
             creatures[pickCreature].jump = 0;
