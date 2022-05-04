@@ -26,7 +26,7 @@ BITMAP *jellyfish;
 BITMAP* fish[5];
 
 const int screenWidth = 320;
-const int screenHeight = 200;
+const int screenHeight = 240;
 
 typedef struct Rectangle {
     float x;
@@ -142,7 +142,7 @@ int main(void)
                 if (key[KEY_RIGHT] && playerPosition.x < screenWidth && playerDead == 0) { playerPosition.x += 2.0f; playerDirection = -1; }
                 if (key[KEY_LEFT] && playerPosition.x > 0 && playerDead == 0) { playerPosition.x -= 2.0f; playerDirection = 1; }
                 if (key[KEY_UP] && playerPosition.y > 0 && playerDead == 0) playerPosition.y -= 2.0f;
-                if (key[KEY_DOWN] && playerPosition.y < screenHeight - 32 && playerDead == 0) playerPosition.y += 2.0f;
+                if (key[KEY_DOWN] && playerPosition.y < screenHeight - 15 && playerDead == 0) playerPosition.y += 2.0f;
                 
                 SharkRoam(screenWidth, screenHeight);
                 FishSpawn(screenWidth, screenHeight);

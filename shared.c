@@ -146,6 +146,8 @@ void SharkRoam(float ScreenWidth, float ScreenHeight) {
 }
 
 void FishSpawn(float ScreenWidth, float ScreenHeight) {
+    int height = 40;
+    if (ScreenHeight < 600) height = 20;
     if (FishSpawnTimer >= 120) {
         int pickCreature = 0;
         pickCreature = GetRandomNum(0, 26);
@@ -157,7 +159,7 @@ void FishSpawn(float ScreenWidth, float ScreenHeight) {
             int pickSide[2] = { 20,(float)ScreenWidth - 20 };
             float pickHeight = GetRandomNum(20, ScreenHeight - 50);
             float ps = pickSide[rand() % 2];
-            if (creatures[pickCreature].type == 5 || creatures[pickCreature].type == 6) pickHeight = (float)ScreenHeight - 40;
+            if (creatures[pickCreature].type == 5 || creatures[pickCreature].type == 6) pickHeight = (float)ScreenHeight - height;
             creatures[pickCreature].origin = (Vec2){ ps,pickHeight };
             creatures[pickCreature].position = (Vec2){ ps,pickHeight };
             printf("DEBUG: Spawning Fish coords x:%f y:%f type:%i active:%i\n", ps, pickHeight, creatures[pickCreature].type, creatures[pickCreature].active);
@@ -168,12 +170,14 @@ void FishSpawn(float ScreenWidth, float ScreenHeight) {
 }
 
 void CrustJump(int CreatureID, float ScreenHeight) {
+    int height = 40; int jumpheight = 128;
+    if (ScreenHeight < 600) { height = 20; jumpheight = 64; }
     if (creatures[CreatureID].type != 5 && creatures[CreatureID].type != 6) return; // only crustaceans
-    if (creatures[CreatureID].position.y > ScreenHeight - 128 && creatures[CreatureID].jump) // go up
+    if (creatures[CreatureID].position.y > ScreenHeight - jumpheight && creatures[CreatureID].jump) // go up
         creatures[CreatureID].position.y -= 2.0f;
-    else if (creatures[CreatureID].position.y <= ScreenHeight - 128 && creatures[CreatureID].jump) // stop going up
+    else if (creatures[CreatureID].position.y <= ScreenHeight - jumpheight && creatures[CreatureID].jump) // stop going up
         creatures[CreatureID].jump = 0;
-    else if (creatures[CreatureID].position.y < ScreenHeight - 40 && !creatures[CreatureID].jump) // come back down
+    else if (creatures[CreatureID].position.y < ScreenHeight - height && !creatures[CreatureID].jump) // come back down
         creatures[CreatureID].position.y += 2.0f;
 }
 
