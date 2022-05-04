@@ -1,3 +1,5 @@
+// ALLEGRO MAIN.C FOR DOS
+
 #include <allegro.h>
 
 #include "../shared.h"
@@ -125,11 +127,11 @@ int main(void)
             struct Rectangle playerRec = { playerPosition.x, playerPosition.y, 16, 16 };
 
             // these should flip depending on which direction shark is facing
-            struct Rectangle sharkTailRec = { mrShark.position.x + (32 * 4 / 2), mrShark.position.y, 32 * 4 / 2, 16 * 4 };
-            struct Rectangle sharkBiteRec = { mrShark.position.x, mrShark.position.y, 32 * 4 / 2, 16 * 4 };
+            struct Rectangle sharkTailRec = { mrShark.position.x + (32 / 2), mrShark.position.y, 32 / 2, 16 };
+            struct Rectangle sharkBiteRec = { mrShark.position.x, mrShark.position.y, 32 / 2, 16 };
             if (sharkDirection == -1){
-                sharkTailRec = (Rectangle){ mrShark.position.x, mrShark.position.y, 32 * 4 / 2, 16 * 4 };
-                sharkBiteRec = (Rectangle){ mrShark.position.x + (32 * 4 / 2), mrShark.position.y, 32 * 4 / 2, 16 * 4 };
+                sharkTailRec = (Rectangle){ mrShark.position.x, mrShark.position.y, 32 / 2, 16 };
+                sharkBiteRec = (Rectangle){ mrShark.position.x + (32 / 2), mrShark.position.y, 32 / 2, 16 };
             }
 
             if (key[KEY_P]) { if (PausedGame == 1) PausedGame = 0; else PausedGame = 1; }
@@ -193,8 +195,8 @@ int main(void)
                 if (creatures[i].active){
                     if (creatures[i].type < 0 || creatures[i].type > 8) continue;
                     int height = 16;
-                    if (creatures[i].type == 8)
-                        height = 64;
+                    //if (creatures[i].type == 8) // test this later after increasing bmp size
+                    //    height = 64;
                     struct Rectangle FishRec = { creatures[i].position.x, creatures[i].position.y, 16, height };
                     if (CheckCollisionRecs(playerRec, FishRec) == 1) {
                         if ((playerRank + 1) >= creatureRank[creatures[i].type]) {
@@ -234,7 +236,7 @@ int main(void)
                         else
                             masked_blit(seahorse, screen2, 0, 0, creatures[i].position.x, creatures[i].position.y, 16, 16);
                     }
-                    else if (creatures[i].type == 8)
+                    else if (creatures[i].type == 8) // might need to increase size of jellyfish. test this later
                         masked_blit(jellyfish, screen2, 0, 0, creatures[i].position.x, creatures[i].position.y, 16, 16);
                 }
             }
