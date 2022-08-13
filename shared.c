@@ -56,6 +56,7 @@ void SetVars(float ScreenWidth, float ScreenHeight) {
     mrShark.position = (Vec2){ ScreenWidth - 20, 20 };
 
     PausedGame = 0;
+    mainMenu = 1;
     GameOver = 0;
     lives = 5;
     playerDirection = 1;

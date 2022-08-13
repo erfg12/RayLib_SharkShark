@@ -38,6 +38,7 @@ int SharkHealth;
 int LeftClick; // bool
 int sharkDirection; // 1 = left, -1 = right
 int PausedGame;
+int mainMenu;
 int GameOver;
 int playerDead;
 int sharkBitten; // bool

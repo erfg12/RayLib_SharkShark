@@ -50,63 +50,77 @@ int main(void)
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
-        struct Rectangle playerRec = { playerPosition.x, playerPosition.y, 16, 16 };
-
-        // these should flip depending on which direction shark is facing
-        struct Rectangle sharkTailRec = { mrShark.position.x + (SharkImage.width * 4 / 2), mrShark.position.y, SharkImage.width * 4 / 2, SharkImage.height * 4 };
-        struct Rectangle sharkBiteRec = { mrShark.position.x, mrShark.position.y, SharkImage.width * 4 / 2, SharkImage.height * 4 };
-        if (sharkDirection == -1){
-            sharkTailRec = (Rectangle){ mrShark.position.x, mrShark.position.y, SharkImage.width * 4 / 2, SharkImage.height * 4 };
-            sharkBiteRec = (Rectangle){ mrShark.position.x + (SharkImage.width * 4 / 2), mrShark.position.y, SharkImage.width * 4 / 2, SharkImage.height * 4 };
+        if (mainMenu == 1) {
+            if (IsKeyPressed(KEY_S)) { mainMenu = 0; }
+            // DRAW
+            BeginDrawing();
+            ClearBackground(BLUE);
+            DrawText("SHARK! SHARK!", screenWidth / 2 - 150, 10, 40, RAYWHITE);
+            DrawText("- re-created by Jacob Fliss", screenWidth / 2, 60, 14, RAYWHITE);
+            DrawText("[S] - START GAME", screenWidth / 2 - 100, 200, 20, SKYBLUE);
+            DrawText("[ESC] - QUIT GAME", screenWidth / 2 - 100, 230, 20, PINK);
+            EndDrawing();
         }
 
-        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !playerDead && !PausedGame && !GameOver) { LeftClick = true; StoredMousePos = GetMousePosition(); }
-        if (IsKeyPressed(KEY_P)) { if (PausedGame) PausedGame = false; else PausedGame = true; }
-        if ((IsKeyPressed(KEY_ENTER) || IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) && GameOver) { SetVars(screenWidth, screenHeight); printf("restarting game"); }
-        if (IsKeyPressed(KEY_ENTER) && playerDead && !PausedGame && !GameOver) { playerDead = false; playerPosition.x = (float)screenWidth / 2; playerPosition.y = (float)screenHeight / 2; }
+        if (mainMenu == 0) {
+            struct Rectangle playerRec = { playerPosition.x, playerPosition.y, 16, 16 };
 
-        if (!PausedGame && !GameOver) {
-            if (LeftClick && !playerDead) { // click to move
-                if (playerPosition.x < StoredMousePos.x) {
-                    playerPosition.x += 2.0f;
-                    playerDirection = -1;
-                }
-                else {
-                    playerPosition.x -= 2.0f;
-                    playerDirection = 1;
-                }
-                if (playerPosition.y < StoredMousePos.y)
-                    playerPosition.y += 2.0f;
-                else
-                    playerPosition.y -= 2.0f;
-                if (playerPosition.x >= StoredMousePos.x - 2 && playerPosition.x <= StoredMousePos.x + 2 && playerPosition.y >= StoredMousePos.y - 2 && playerPosition.y <= StoredMousePos.y + 2)
-                    LeftClick = false; 
+            // these should flip depending on which direction shark is facing
+            struct Rectangle sharkTailRec = { mrShark.position.x + (SharkImage.width * 4 / 2), mrShark.position.y, SharkImage.width * 4 / 2, SharkImage.height * 4 };
+            struct Rectangle sharkBiteRec = { mrShark.position.x, mrShark.position.y, SharkImage.width * 4 / 2, SharkImage.height * 4 };
+            if (sharkDirection == -1) {
+                sharkTailRec = (Rectangle){ mrShark.position.x, mrShark.position.y, SharkImage.width * 4 / 2, SharkImage.height * 4 };
+                sharkBiteRec = (Rectangle){ mrShark.position.x + (SharkImage.width * 4 / 2), mrShark.position.y, SharkImage.width * 4 / 2, SharkImage.height * 4 };
             }
-            if (IsKeyDown(KEY_RIGHT) && playerPosition.x < screenWidth && !playerDead) { playerPosition.x += 2.0f; playerDirection = -1; }
-            if (IsKeyDown(KEY_LEFT) && playerPosition.x > 0 && !playerDead) { playerPosition.x -= 2.0f; playerDirection = 1; }
-            if (IsKeyDown(KEY_UP) && playerPosition.y > 0 && !playerDead) playerPosition.y -= 2.0f;
-            if (IsKeyDown(KEY_DOWN) && playerPosition.y < screenHeight - 32 && !playerDead) playerPosition.y += 2.0f;
-            
-            SharkRoam(screenWidth, screenHeight);
-            FishSpawn(screenWidth, screenHeight);
-            FishMoveAndDeSpawn(screenWidth, screenHeight);
-        }
 
-        // DRAW
-        BeginDrawing();
+            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !playerDead && !PausedGame && !GameOver) { LeftClick = true; StoredMousePos = GetMousePosition(); }
+            if (IsKeyPressed(KEY_P)) { if (PausedGame) PausedGame = false; else PausedGame = true; }
+            if ((IsKeyPressed(KEY_ENTER) || IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) && GameOver) { SetVars(screenWidth, screenHeight); printf("restarting game"); }
+            if (IsKeyPressed(KEY_ENTER) && playerDead && !PausedGame && !GameOver) { playerDead = false; playerPosition.x = (float)screenWidth / 2; playerPosition.y = (float)screenHeight / 2; }
+
+            if (!PausedGame && !GameOver) {
+                if (LeftClick && !playerDead) { // click to move
+                    if (playerPosition.x < StoredMousePos.x) {
+                        playerPosition.x += 2.0f;
+                        playerDirection = -1;
+                    }
+                    else {
+                        playerPosition.x -= 2.0f;
+                        playerDirection = 1;
+                    }
+                    if (playerPosition.y < StoredMousePos.y)
+                        playerPosition.y += 2.0f;
+                    else
+                        playerPosition.y -= 2.0f;
+                    if (playerPosition.x >= StoredMousePos.x - 2 && playerPosition.x <= StoredMousePos.x + 2 && playerPosition.y >= StoredMousePos.y - 2 && playerPosition.y <= StoredMousePos.y + 2)
+                        LeftClick = false;
+                }
+                if (IsKeyDown(KEY_RIGHT) && playerPosition.x < screenWidth && !playerDead) { playerPosition.x += 2.0f; playerDirection = -1; }
+                if (IsKeyDown(KEY_LEFT) && playerPosition.x > 0 && !playerDead) { playerPosition.x -= 2.0f; playerDirection = 1; }
+                if (IsKeyDown(KEY_UP) && playerPosition.y > 0 && !playerDead) playerPosition.y -= 2.0f;
+                if (IsKeyDown(KEY_DOWN) && playerPosition.y < screenHeight - 32 && !playerDead) playerPosition.y += 2.0f;
+
+                SharkRoam(screenWidth, screenHeight);
+                FishSpawn(screenWidth, screenHeight);
+                FishMoveAndDeSpawn(screenWidth, screenHeight);
+            }
+
+            // DRAW
+            BeginDrawing();
             ClearBackground(BLUE);
             DrawText(TextFormat("SCORE %4i", score), 10, 10, 20, RAYWHITE);
             DrawText(TextFormat("%4i LIVES", lives), (float)screenWidth - 120, 10, 20, RAYWHITE);
-            if (GameOver) 
+            if (GameOver)
                 DrawText(TextFormat("GAME OVER!\n\nYOUR SCORE: %4i\n\nPRESS ENTER TO RESTART GAME", score), screenWidth / 2 - 100, screenHeight / 2 - 100, 20, RED);
             if (PausedGame)
                 DrawText("PAUSED\n\nPRESS P TO RESUME", screenWidth / 2 - 50, screenHeight / 2 - 50, 20, WHITE);
             if (playerDead)
                 DrawText("PLAYER DIED\n\nPRESS ENTER TO SPAWN", screenWidth / 2 - 50, screenHeight / 2 - 50, 20, WHITE);
-            
+
             if (CheckCollisionRecs(playerRec, sharkBiteRec) && SharkHealth > 0) { // shark bit player
                 PlayerBit();
-            } else if (CheckCollisionRecs(playerRec, sharkTailRec) && SharkHealth > 0) { // player bit shark on tail
+            }
+            else if (CheckCollisionRecs(playerRec, sharkTailRec) && SharkHealth > 0) { // player bit shark on tail
                 sharkBitten = true;
             }
 
@@ -114,7 +128,8 @@ int main(void)
             Vector2 PlayerGoTo = { playerPosition.x, playerPosition.y };
             if (playerDirection == 1) {
                 DrawTextureEx(FishTexturesLeft[playerRank], PlayerGoTo, 0, 2, WHITE);
-            } else {
+            }
+            else {
                 DrawTextureEx(FishTexturesRight[playerRank], PlayerGoTo, 0, 2, WHITE);
             }
 
@@ -123,21 +138,22 @@ int main(void)
                 Vector2 GoTo = { mrShark.position.x, mrShark.position.y };
                 if (SharkHealth > 0) {
                     if (sharkDirection == 1) { // left
-                        if (SharkHurtTimer%10 && SharkHurtTimer > 0) DrawTextureEx(SharkTextureLeft, GoTo, 0, 4, RED);
+                        if (SharkHurtTimer % 10 && SharkHurtTimer > 0) DrawTextureEx(SharkTextureLeft, GoTo, 0, 4, RED);
                         else DrawTextureEx(SharkTextureLeft, GoTo, 0, 4, YELLOW);
                     }
                     else { // right
-                        if (SharkHurtTimer%10 && SharkHurtTimer > 0) DrawTextureEx(SharkTexture, GoTo, 0, 4, RED);
+                        if (SharkHurtTimer % 10 && SharkHurtTimer > 0) DrawTextureEx(SharkTexture, GoTo, 0, 4, RED);
                         else DrawTextureEx(SharkTexture, GoTo, 0, 4, YELLOW);
                     }
-                } else {
+                }
+                else {
                     DrawTextureEx(SharkDeadTexture, GoTo, 0, 4, BLACK);
                 }
             }
 
             // for each fish, check collisions and draw on screen
-            for (int i = 0; i < 27; i++){
-                if (creatures[i].active){
+            for (int i = 0; i < 27; i++) {
+                if (creatures[i].active) {
                     if (creatures[i].type < 0 || creatures[i].type > 8) continue;
                     int height = 16;
                     if (creatures[i].type == 8)
@@ -149,14 +165,15 @@ int main(void)
                             creatures[i].position.x = -10;
                             creatures[i].active = false;
                             score = score + 100;
-                            if (score % 1000 == 0 && playerRank < 4 ){
+                            if (score % 1000 == 0 && playerRank < 4) {
                                 playerRank++;
                                 //printf("************** PLAYER RANK IS NOW %i ***************\n", playerRank);
                             }
                             else if (score % 1000 == 0 && playerRank >= 4) {
                                 lives++;
                             }
-                        } else {
+                        }
+                        else {
                             //printf("**************** BITTEN BY A FISH. X:%f Y:%f ACTIVE:%i TYPE:%i ********************\n", creatures[i].position.x, creatures[i].position.y, creatures[i].active, creatures[i].type);
                             PlayerBit();
                         }
@@ -169,13 +186,15 @@ int main(void)
                             DrawTextureEx(LobsterTextureLeft, (Vector2) { creatures[i].position.x, creatures[i].position.y }, 0, 2.3, YELLOW);
                         else
                             DrawTextureEx(LobsterTextureRight, (Vector2) { creatures[i].position.x, creatures[i].position.y }, 0, 2.3, YELLOW);
-                    } else if (creatures[i].type <= 4 && creatures[i].type >= 0) {
+                    }
+                    else if (creatures[i].type <= 4 && creatures[i].type >= 0) {
                         Vector2 GoTo = { creatures[i].position.x, creatures[i].position.y };
                         if (creatures[i].origin.x <= 20)
                             DrawTextureEx(FishTexturesRight[creatures[i].type], GoTo, 0, 2, YELLOW); // RIGHT
                         else
                             DrawTextureEx(FishTexturesLeft[creatures[i].type], GoTo, 0, 2, YELLOW); // LEFT
-                    } else if (creatures[i].type == 7) {
+                    }
+                    else if (creatures[i].type == 7) {
                         if (creatures[i].origin.x <= 20)
                             DrawTextureEx(SeaHorseTextureLeft, (Vector2) { creatures[i].position.x, creatures[i].position.y }, 0, 2.2, YELLOW);
                         else
@@ -185,7 +204,8 @@ int main(void)
                         DrawTextureEx(JellyfishTexture, (Vector2) { creatures[i].position.x, creatures[i].position.y }, 0, 4, YELLOW);
                 }
             }
-        EndDrawing();
+            EndDrawing();
+        }
     }
     CloseWindow();
     return 0;
