@@ -1,2 +1,5 @@
-Shark! Shark! game re-created with RayLib and Allegro game creation libraries.
+Shark! Shark! game re-created!
 
+Allegro - DOS
+RayLib - Windows, MacOS, Linux, Android
+nxdk - Xbox

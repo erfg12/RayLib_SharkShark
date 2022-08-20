@@ -41,9 +41,9 @@ void deinit() {
     clear_keybuf();
 }
 
- void ticker(){
-   ticks++;
- }
+//void ticker() {
+//    ticks++;
+//}
 
 void abort_on_error(const char *message){
 	 if (screen != NULL){
@@ -68,11 +68,11 @@ void init() {
     allegro_init();
 
    /* SETUP THE MAIN TIMER TO 60 FPS */
-   install_timer(); //Setup the timer
-   LOCK_VARIABLE(ticks); //Set timer variable
+   //install_timer(); //Setup the timer
+   //LOCK_VARIABLE(ticks); //Set timer variable
    //LOCK_FUNCTION(ticker); //Set timer function
-   ticker();
-   install_int_ex(ticker, BPS_TO_TIMER(60));
+   //ticker();
+   //install_int_ex(ticker, BPS_TO_TIMER(60));
 
     depth = desktop_color_depth();
     if (depth == 0) depth = 32;
@@ -88,11 +88,11 @@ void init() {
     }
 
     /* INITIALIZE BACK BUFFER (MUST BE AFTER THE GRAPHICS!) */
-   screen2 = create_bitmap(screen->w, screen->h); //Set up double buffer
-   if(!screen2) {
-     allegro_message("Failed to create double buffer. Out of memory?");
-     exit(1);
-   }
+    screen2 = create_bitmap(screen->w, screen->h); //Set up double buffer
+    if(!screen2) {
+        allegro_message("Failed to create double buffer. Out of memory?");
+        exit(1);
+    }
 
     install_keyboard();
 }
@@ -114,12 +114,12 @@ int main(void)
     fish[4] = load_bitmap("assets/rank5.bmp", NULL);
 
     while (!key[KEY_ESC]) {
-        while(ticks == 0) {
-            rest(1); //Wait for a full tick
-        }
+        //while(ticks == 0) {
+        //    rest(1); //Wait for a full tick
+        //}
 
-        while(ticks > 0) { // limit game to 60 fps
-            int old_ticks = ticks;
+        //while(ticks > 0) { // limit game to 60 fps
+        //    int old_ticks = ticks;
 
             clear_bitmap(screen2);
             rectfill(screen2,0,0,screen->w,screen->h, makecol(0,0,255));
@@ -241,9 +241,9 @@ int main(void)
                 }
             }
             blit(screen2, screen, 0, 0, 0, 0, screen->w, screen->h);
-            ticks--;
-            if(old_ticks <= ticks) break; //Time up! Beggin drawing
-        }
+        //    ticks--;
+        //    if(old_ticks <= ticks) break; //Time up! Beggin drawing
+        //}
     }
 
     deinit();
