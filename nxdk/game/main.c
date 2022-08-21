@@ -9,6 +9,9 @@
 #include <math.h>
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_ttf.h>
+#include <stdbool.h>
+#include <pbkit/pbkit.h>
 
 static void printSDLErrorAndReboot(void)
 {
@@ -37,12 +40,14 @@ int main(void)
     SDL_Window *window;
     SDL_Event event;
     SDL_Surface *screenSurface, *imageSurface;
+    SDL_GameController *pad = NULL;
+    SDL_Renderer *renderer = NULL;
+    static SDL_Event e;
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     if (SDL_VideoInit(NULL) < 0) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL video.\n");
-        printSDLErrorAndReboot();
+        debugPrint("Couldn't initialize SDL video.\n");
     }
 
     window = SDL_CreateWindow("Demo",
@@ -53,25 +58,47 @@ int main(void)
     if(window == NULL)
     {
         debugPrint( "Window could not be created!\n");
-        SDL_VideoQuit();
-        printSDLErrorAndReboot();
+    }
+
+    renderer = SDL_CreateRenderer(window, -1, 0);
+    if (renderer == NULL) {
+        debugPrint("CreateRenderer failed: %s\n", SDL_GetError());
     }
 
     if (!(IMG_Init(IMG_INIT_JPG) & IMG_INIT_JPG)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't intialize SDL_image.\n");
-        SDL_VideoQuit();
-        printIMGErrorAndReboot();
+        debugPrint("Couldn't intialize SDL_image.\n");
     }
 
     screenSurface = SDL_GetWindowSurface(window);
     if (!screenSurface) {
-        SDL_VideoQuit();
-        printSDLErrorAndReboot();
+        debugPrint("screenSurface is null.\n");
     }
 
-    /*Texture2D FishTexturesRight[5] = { LoadTexture("./resources/rank1.png"), LoadTexture("resources/rank2.png"), LoadTexture("resources/rank3.png"), LoadTexture("resources/rank4.png"), LoadTexture("resources/rank5.png") };
-    Image FishImagesLeft[5] = { LoadImage("resources/rank1.png"), LoadImage("resources/rank2.png"), LoadImage("resources/rank3.png"), LoadImage("resources/rank4.png"), LoadImage("resources/rank5.png") };
-    ImageFlipHorizontal(&FishImagesLeft[0]);
+    while (SDL_PollEvent(&e)) {
+      if (e.type == SDL_CONTROLLERDEVICEADDED) {
+        SDL_GameController *new_pad = SDL_GameControllerOpen(e.cdevice.which);
+        if (pad == NULL) {
+          pad = new_pad;
+        }
+      }
+      else if (e.type == SDL_CONTROLLERDEVICEREMOVED) {
+        if (pad == SDL_GameControllerFromInstanceID(e.cdevice.which)) {
+          pad = NULL;
+        }
+        SDL_GameControllerClose(SDL_GameControllerFromInstanceID(e.cdevice.which));
+      }
+      else if (e.type == SDL_CONTROLLERBUTTONDOWN) {
+        if (e.cbutton.button == SDL_CONTROLLER_BUTTON_START) {
+          pad = (SDL_GameControllerFromInstanceID(e.cdevice.which));
+        }
+      }
+    }
+
+    SDL_GameControllerUpdate();
+
+    //SDL_Surface FishTexturesRight[5] = { IMG_Load("resources/rank1.png"), IMG_Load("resources/rank2.png"), IMG_Load("resources/rank3.png"), IMG_Load("resources/rank4.png"), IMG_Load("resources/rank5.png") };
+    //SDL_Surface FishImagesLeft[5] = { IMG_Load("resources/rank1.png"), IMG_Load("resources/rank2.png"), IMG_Load("resources/rank3.png"), IMG_Load("resources/rank4.png"), IMG_Load("resources/rank5.png") };
+    /*ImageFlipHorizontal(&FishImagesLeft[0]);
     ImageFlipHorizontal(&FishImagesLeft[1]);
     ImageFlipHorizontal(&FishImagesLeft[2]);
     ImageFlipHorizontal(&FishImagesLeft[3]);
@@ -92,10 +119,49 @@ int main(void)
     ImageFlipHorizontal(&LobsterImageLeft);
     Texture2D LobsterTextureLeft = LoadTextureFromImage(LobsterImageLeft);
     Texture2D JellyfishTexture = LoadTexture("resources/jellyfish.png");
-
+    */
     // Main game loop
-    while (!WindowShouldClose())    // Detect window close button or ESC key
-    {
+    while (!done) {
+        while (SDL_PollEvent(&event)) {
+            switch (event.type) {
+            case SDL_QUIT:
+                done = 1;
+                break;
+            default:
+                break;
+            }
+        }
+
+        if (mainMenu == 1) {
+            if (SDL_GameControllerGetButton(pad, SDL_CONTROLLER_BUTTON_START) == 1) { mainMenu = 0; }
+            // DRAW
+            /*BeginDrawing();
+            ClearBackground(BLUE);
+            DrawText("SHARK! SHARK!", screenWidth / 2 - 150, 10, 40, RAYWHITE);
+            DrawText("- re-created by Jacob Fliss", screenWidth / 2, 60, 14, RAYWHITE);
+            DrawText("[S] - START GAME", screenWidth / 2 - 100, 200, 20, SKYBLUE);
+            DrawText("[ESC] - QUIT GAME", screenWidth / 2 - 100, 230, 20, PINK);
+            EndDrawing();*/
+
+            TTF_Font* Sans = TTF_OpenFont("D:\\resources\\vegur.ttf", 24);
+
+            SDL_Color White = {255, 255, 255};
+
+            SDL_Surface* surfaceMessage =
+                TTF_RenderText_Solid(Sans, "SHARK! SHARK! - re-created by Jacob Fliss", White); 
+
+            SDL_Texture* Message = SDL_CreateTextureFromSurface(renderer, surfaceMessage);
+
+            SDL_Rect Message_rect; //create a rect
+            Message_rect.x = 0;  //controls the rect's x coordinate 
+            Message_rect.y = 0; // controls the rect's y coordinte
+            Message_rect.w = 100; // controls the width of the rect
+            Message_rect.h = 100; // controls the height of the rect
+
+            SDL_RenderCopy(renderer, Message, NULL, &Message_rect);
+        }
+
+        /*
         if (mainMenu == 1) {
             if (IsKeyPressed(KEY_S)) { mainMenu = 0; }
             // DRAW
@@ -253,18 +319,6 @@ int main(void)
             EndDrawing();
         }
     }*/
-    while (!done) {
-        /* Check for events */
-        while (SDL_PollEvent(&event)) {
-            switch (event.type) {
-            case SDL_QUIT:
-                done = 1;
-                break;
-            default:
-                break;
-            }
-        }
-
         SDL_BlitSurface(imageSurface, NULL, screenSurface, NULL);
         SDL_UpdateWindowSurface(window);
 

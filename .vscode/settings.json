@@ -1,6 +1,7 @@
 {
     "files.associations": {
-        "xiosbase": "c"
+        "xiosbase": "c",
+        "pbkit.h": "c"
     },
     "cmake.configureOnOpen": false
 }

@@ -2,3 +2,10 @@
 .DS_Store
 nxdk/*
 !nxdk/game
+nxdk/game/bin
+*.obj
+*.d
+*.lib
+*.exe
+*.iso
+*.xbe
