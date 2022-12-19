@@ -148,7 +148,7 @@ void SharkRoam(float ScreenWidth, float ScreenHeight) {
 
 void FishSpawn(float ScreenWidth, float ScreenHeight) {
     int height = 40;
-    if (ScreenHeight < 600) height = 20;
+    //if (ScreenHeight < 600) height = 20;
     if (FishSpawnTimer >= 120) {
         int pickCreature = 0;
         pickCreature = GetRandomNum(0, 26);
@@ -172,7 +172,7 @@ void FishSpawn(float ScreenWidth, float ScreenHeight) {
 
 void CrustJump(int CreatureID, float ScreenHeight) {
     int height = 40; int jumpheight = 128;
-    if (ScreenHeight < 600) { height = 20; jumpheight = 64; }
+    //if (ScreenHeight < 600) { height = 20; jumpheight = 64; }
     if (creatures[CreatureID].type != 5 && creatures[CreatureID].type != 6) return; // only crustaceans
     if (creatures[CreatureID].position.y > ScreenHeight - jumpheight && creatures[CreatureID].jump) // go up
         creatures[CreatureID].position.y -= 2.0f;
