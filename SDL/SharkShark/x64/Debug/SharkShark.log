@@ -1,0 +1,15 @@
+﻿  main.c
+C:\Users\newgm\Documents\GitHub\RayLib_SharkShark\SDL\SharkShark\main.c(41,10): warning C4244: 'function': conversion from 'const int' to 'float', possible loss of data
+C:\Users\newgm\Documents\GitHub\RayLib_SharkShark\SDL\SharkShark\main.c(41,24): warning C4244: 'function': conversion from 'const int' to 'float', possible loss of data
+C:\Users\newgm\Documents\GitHub\RayLib_SharkShark\SDL\SharkShark\main.c(127,16): warning C4244: 'function': conversion from 'const int' to 'float', possible loss of data
+C:\Users\newgm\Documents\GitHub\RayLib_SharkShark\SDL\SharkShark\main.c(127,30): warning C4244: 'function': conversion from 'const int' to 'float', possible loss of data
+C:\Users\newgm\Documents\GitHub\RayLib_SharkShark\SDL\SharkShark\main.c(128,16): warning C4244: 'function': conversion from 'const int' to 'float', possible loss of data
+C:\Users\newgm\Documents\GitHub\RayLib_SharkShark\SDL\SharkShark\main.c(128,30): warning C4244: 'function': conversion from 'const int' to 'float', possible loss of data
+C:\Users\newgm\Documents\GitHub\RayLib_SharkShark\SDL\SharkShark\main.c(129,25): warning C4244: 'function': conversion from 'const int' to 'float', possible loss of data
+C:\Users\newgm\Documents\GitHub\RayLib_SharkShark\SDL\SharkShark\main.c(129,39): warning C4244: 'function': conversion from 'const int' to 'float', possible loss of data
+C:\Users\newgm\Documents\GitHub\RayLib_SharkShark\SDL\SharkShark\main.c(137,67): warning C4244: 'function': conversion from 'const int' to 'float', possible loss of data
+C:\Users\newgm\Documents\GitHub\RayLib_SharkShark\SDL\SharkShark\main.c(137,81): warning C4244: 'function': conversion from 'const int' to 'float', possible loss of data
+C:\Users\newgm\Documents\GitHub\RayLib_SharkShark\SDL\SharkShark\main.c(232,90): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+C:\Users\newgm\Documents\GitHub\RayLib_SharkShark\SDL\SharkShark\main.c(253,46): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\Users\newgm\Documents\GitHub\RayLib_SharkShark\SDL\SharkShark\main.c(253,71): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+  SharkShark.vcxproj -> C:\Users\newgm\Documents\GitHub\RayLib_SharkShark\SDL\x64\Debug\SharkShark.exe
