@@ -167,19 +167,19 @@ int main(int argc, char* args[])
 				if (GameOver) {
 					char UI_gameover_t[255];
 					sprintf_s(UI_gameover_t, 255, "GAME OVER!\n\nYOUR SCORE: %4i\n\nPRESS ENTER TO RESTART GAME", score);
-					SDL_Surface* UI_gameover = TTF_RenderText_Solid(font, UI_gameover_t, color_white);
+					SDL_Surface* UI_gameover = TTF_RenderText_Blended_Wrapped(font, UI_gameover_t, color_white, 800);
 					SDL_Texture* UI_gameover_text = SDL_CreateTextureFromSurface(gRenderer, UI_gameover);
 					SDL_Rect UI_gameover_renderQuad = { SCREEN_WIDTH / 2 - 100, SCREEN_HEIGHT / 2 - 100, UI_gameover->w, UI_gameover->h };
 					SDL_RenderCopy(gRenderer, UI_gameover_text, NULL, &UI_gameover_renderQuad);
 				}
 				if (PausedGame) {
-					SDL_Surface* UI_pause = TTF_RenderText_Solid(font, "PAUSED\n\nPRESS P TO RESUME", color_white);
+					SDL_Surface* UI_pause = TTF_RenderText_Blended_Wrapped(font, "PAUSED\n\nPRESS P TO RESUME", color_white, 800);
 					SDL_Texture* UI_pause_text = SDL_CreateTextureFromSurface(gRenderer, UI_pause);
 					SDL_Rect UI_pause_renderQuad = { SCREEN_WIDTH / 2 - 50, SCREEN_HEIGHT / 2 - 50, UI_pause->w, UI_pause->h };
 					SDL_RenderCopy(gRenderer, UI_pause_text, NULL, &UI_pause_renderQuad);
 				}
 				if (playerDead) {
-					SDL_Surface* UI_died = TTF_RenderText_Solid(font, "PLAYER DIED\n\nPRESS ENTER TO SPAWN", color_white);
+					SDL_Surface* UI_died = TTF_RenderText_Blended_Wrapped(font, "PLAYER DIED\n\nPRESS ENTER TO SPAWN", color_white, 800);
 					SDL_Texture* UI_died_text = SDL_CreateTextureFromSurface(gRenderer, UI_died);
 					SDL_Rect UI_died_renderQuad = { SCREEN_WIDTH / 2 - 50, SCREEN_HEIGHT / 2 - 50, UI_died->w, UI_died->h };
 					SDL_RenderCopy(gRenderer, UI_died_text, NULL, &UI_died_renderQuad);
