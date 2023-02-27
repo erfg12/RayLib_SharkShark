@@ -47,7 +47,7 @@ extern int creatureRank[9];
 extern float creatureSpeed[9];
 
 int GetRandomNum(int min, int max);
-void SetShark();
+void SetShark(int bitten);
 void SetFish();
 void SetVars(float ScreenWidth, float ScreenHeight);
 void HurtShark();

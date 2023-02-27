@@ -18,9 +18,16 @@ int GetRandomNum(int min, int max)
     return result % range + min;
 }
 
-void SetShark() {
+void SetShark(int bitten) {
     mrShark.active = 1;
     mrShark.objective = playerPosition;
+
+    if (bitten == 0) {
+        if (mrShark.position.x > playerPosition.x)
+            sharkDirection = 1;
+        else
+            sharkDirection = -1;
+    }
 
     float module = sqrt(pow(mrShark.objective.x - mrShark.position.x, 2) + pow(mrShark.objective.y - mrShark.position.y, 2));
 
@@ -68,10 +75,9 @@ void SetVars(float ScreenWidth, float ScreenHeight) {
     SharkHurtTimer = 0;
     SharkHealth = 10;
     LeftClick = 0;
-    sharkDirection = 1;
     sharkBitten = 0;
 
-    SetShark();
+    SetShark(0);
     sharkDirection = 1;
     SetFish();
     //printf("DEBUG: SETTING shark coords x:%f y:%f sx:%f sy:%f\n", mrShark.position.x, mrShark.position.y, mrShark.speed.x, mrShark.speed.y);
@@ -86,7 +92,7 @@ void HurtShark() {
     if (SharkHurtTimer >= 60) {
         SharkHealth--;
         sharkDirection = sharkDirection * -1; // change direction
-        SetShark(); // reset exactly where he's headed
+        SetShark(1); // reset exactly where he's headed
         sharkBitten = 0;
         SharkHurtTimer = 0;
         return;
@@ -120,11 +126,7 @@ void SharkRoam(float ScreenWidth, float ScreenHeight) {
         }
 
         if (mrShark.position.x <= -20 || mrShark.position.x >= ScreenWidth - 20 || mrShark.position.y <= -20 || mrShark.position.y >= ScreenHeight - 20) {
-            SetShark();
-            if (mrShark.position.x <= 5)
-                sharkDirection = -1;
-            else
-                sharkDirection = 1;
+            SetShark(0);
             if (sharkBounces == sharkMaxBounces) {
                 mrShark.position.x = -100;
                 mrShark.position.y = -100;
