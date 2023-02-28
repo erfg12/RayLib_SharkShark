@@ -172,8 +172,9 @@ void FishSpawn(float ScreenWidth, float ScreenHeight) {
     FishSpawnTimer++;
 }
 
-void CrustJump(int CreatureID, float ScreenHeight) {
-    int height = 40; int jumpheight = 128;
+void CrustJump(int CreatureID, float ScreenHeight, int height) {
+    //int height = 16; // SDL 16 is perfect, others may require a different number
+    int jumpheight = 128;
     //if (ScreenHeight < 600) { height = 20; jumpheight = 64; }
     if (creatures[CreatureID].type != 5 && creatures[CreatureID].type != 6) return; // only crustaceans
     if (creatures[CreatureID].position.y > ScreenHeight - jumpheight && creatures[CreatureID].jump) // go up
@@ -184,7 +185,7 @@ void CrustJump(int CreatureID, float ScreenHeight) {
         creatures[CreatureID].position.y += 2.0f;
 }
 
-void FishMoveAndDeSpawn(float ScreenWidth, float ScreenHeight) {
+void FishMoveAndDeSpawn(float ScreenWidth, float ScreenHeight, int CrustHeight) {
     for (int i = 0; i < 27; i++) {
         if (creatures[i].active) {
             // move
@@ -198,7 +199,7 @@ void FishMoveAndDeSpawn(float ScreenWidth, float ScreenHeight) {
                     creatures[i].jump = 1;
                     //printf("DEBUG: JUMP\n");
                 }
-                CrustJump(i, ScreenHeight);
+                CrustJump(i, ScreenHeight, CrustHeight);
             }
             // de-spawn
             if ((creatures[i].origin.x == (ScreenWidth - 20) && creatures[i].position.x < 0) ||

@@ -130,7 +130,7 @@ int main(int argc, char* args[])
 				if (PausedGame == 0 && GameOver == 0 && mainMenu == 0) {
 					SharkRoam(SCREEN_WIDTH, SCREEN_HEIGHT);
 					FishSpawn(SCREEN_WIDTH, SCREEN_HEIGHT);
-					FishMoveAndDeSpawn(SCREEN_WIDTH, SCREEN_HEIGHT);
+					FishMoveAndDeSpawn(SCREEN_WIDTH, SCREEN_HEIGHT, 16);
 				}
 
 				// check for button presses
@@ -272,7 +272,7 @@ int main(int argc, char* args[])
 						}
 						else if (creatures[i].type == 6) {
 							
-							SDL_Rect tmp = { animChange * 16, 0, ((animChange + 1) * 16), GoTo.y }; // first animation TO-DO: Cycle through animations
+							SDL_Rect tmp = { animChange * 16, 0, ((animChange + 1) * 16), GoTo.y };
 							if (creatures[i].origin.x <= 20) {
 								SDL_RenderCopyEx(gRenderer, lobster, &tmp, &GoTo, 0, NULL, SDL_FLIP_HORIZONTAL);
 							}

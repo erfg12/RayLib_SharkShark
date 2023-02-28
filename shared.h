@@ -53,8 +53,8 @@ void SetVars(float ScreenWidth, float ScreenHeight);
 void HurtShark();
 void SharkRoam(float ScreenWidth, float ScreenHeight);
 void FishSpawn(float ScreenWidth, float ScreenHeight);
-void CrustJump(int CreatureID, float ScreenHeight);
-void FishMoveAndDeSpawn(float ScreenWidth, float ScreenHeight);
+void CrustJump(int CreatureID, float ScreenHeight, int height);
+void FishMoveAndDeSpawn(float ScreenWidth, float ScreenHeight, int CrustHeight);
 void PlayerBit();
 
 #endif

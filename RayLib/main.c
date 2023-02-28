@@ -102,7 +102,7 @@ int main(void)
 
                 SharkRoam(screenWidth, screenHeight);
                 FishSpawn(screenWidth, screenHeight);
-                FishMoveAndDeSpawn(screenWidth, screenHeight);
+                FishMoveAndDeSpawn(screenWidth, screenHeight, 40);
             }
 
             // DRAW
