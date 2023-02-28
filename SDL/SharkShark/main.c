@@ -238,7 +238,6 @@ int main(int argc, char* args[])
 
 				// for each fish, check collisions and draw on screen
 				int animChange = (ticks / 200) % 2;
-				SDL_Rect tmp = { animChange * 16, 0, ((animChange + 1) * 16), GoTo.y };
 				for (int i = 0; i < 27; i++) {
 					if (creatures[i].active) {
 						if (creatures[i].type < 0 || creatures[i].type > 8) continue;
@@ -267,6 +266,7 @@ int main(int argc, char* args[])
 						}
 
 						SDL_Rect GoTo = { creatures[i].position.x, creatures[i].position.y, 16, 16 };
+						SDL_Rect tmp = { animChange * 16, 0, ((animChange + 1) * 16), GoTo.y };
 						if (creatures[i].type == 5) {
 							SDL_RenderCopyEx(gRenderer, crab, &tmp, &GoTo, 0, NULL, SDL_FLIP_NONE);
 						}
