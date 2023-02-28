@@ -8,6 +8,7 @@ const int SCREEN_HEIGHT = 480;
 
 SDL_Texture* shark;
 SDL_Texture* lobster;
+SDL_Surface* lobster_surface;
 SDL_Texture* crab;
 SDL_Texture* shark_dead;
 SDL_Texture* seahorse;
@@ -82,7 +83,7 @@ int main(int argc, char* args[])
 	SDL_FreeSurface(shark_surface);
 	SDL_FreeSurface(shark_dead_surface);
 	SDL_FreeSurface(seahorse_surface);
-	SDL_FreeSurface(lobster_surface);
+	//SDL_FreeSurface(lobster_surface);
 	SDL_FreeSurface(crab_surface);
 
 	const Uint8* keys = SDL_GetKeyboardState(NULL);
@@ -110,6 +111,8 @@ int main(int argc, char* args[])
 			int quit = 0;
 			SetVars(SCREEN_WIDTH, SCREEN_HEIGHT);
 			while (quit == 0) {
+				Uint32 ticks = SDL_GetTicks();
+
 				SDL_SetRenderDrawColor(gRenderer, 0, 0, 255, 255); // blue like water
 				SDL_RenderClear(gRenderer);
 
@@ -234,6 +237,8 @@ int main(int argc, char* args[])
 				}
 
 				// for each fish, check collisions and draw on screen
+				int animChange = (ticks / 200) % 2;
+				SDL_Rect tmp = { animChange * 16, 0, ((animChange + 1) * 16), GoTo.y };
 				for (int i = 0; i < 27; i++) {
 					if (creatures[i].active) {
 						if (creatures[i].type < 0 || creatures[i].type > 8) continue;
@@ -263,28 +268,33 @@ int main(int argc, char* args[])
 
 						SDL_Rect GoTo = { creatures[i].position.x, creatures[i].position.y, 16, 16 };
 						if (creatures[i].type == 5) {
-							SDL_RenderCopyEx(gRenderer, crab, NULL, &GoTo, 0, NULL, SDL_FLIP_NONE);
+							SDL_RenderCopyEx(gRenderer, crab, &tmp, &GoTo, 0, NULL, SDL_FLIP_NONE);
 						}
 						else if (creatures[i].type == 6) {
-							if (creatures[i].origin.x <= 20)
-								SDL_RenderCopyEx(gRenderer, lobster, NULL, &GoTo, 0, NULL, SDL_FLIP_NONE);
+							
+							SDL_Rect tmp = { animChange * 16, 0, ((animChange + 1) * 16), GoTo.y }; // first animation TO-DO: Cycle through animations
+							if (creatures[i].origin.x <= 20) {
+								SDL_RenderCopyEx(gRenderer, lobster, &tmp, &GoTo, 0, NULL, SDL_FLIP_HORIZONTAL);
+							}
 							else
-								SDL_RenderCopyEx(gRenderer, lobster, NULL, &GoTo, 0, NULL, SDL_FLIP_HORIZONTAL);
+								SDL_RenderCopyEx(gRenderer, lobster, &tmp, &GoTo, 0, NULL, SDL_FLIP_NONE);
 						}
 						else if (creatures[i].type <= 4 && creatures[i].type >= 0) {
-							if (creatures[i].origin.x <= 20)
+							if (creatures[i].origin.x <= 20) {
 								SDL_RenderCopyEx(gRenderer, fish[creatures[i].type], NULL, &GoTo, 0, NULL, SDL_FLIP_HORIZONTAL); // RIGHT
-							else
+							}
+							else {
 								SDL_RenderCopyEx(gRenderer, fish[creatures[i].type], NULL, &GoTo, 0, NULL, SDL_FLIP_NONE); // LEFT
+							}
 						}
 						else if (creatures[i].type == 7) {
 							if (creatures[i].origin.x <= 20)
-								SDL_RenderCopyEx(gRenderer, seahorse, NULL, &GoTo, 0, NULL, SDL_FLIP_NONE);
+								SDL_RenderCopyEx(gRenderer, seahorse, &tmp, &GoTo, 0, NULL, SDL_FLIP_NONE);
 							else
-								SDL_RenderCopyEx(gRenderer, seahorse, NULL, &GoTo, 0, NULL, SDL_FLIP_HORIZONTAL);
+								SDL_RenderCopyEx(gRenderer, seahorse, &tmp, &GoTo, 0, NULL, SDL_FLIP_HORIZONTAL);
 						}
 						else if (creatures[i].type == 8)
-							SDL_RenderCopyEx(gRenderer, jellyfish, NULL, &GoTo, 0, NULL, SDL_FLIP_NONE);
+							SDL_RenderCopyEx(gRenderer, jellyfish, &tmp, &GoTo, 0, NULL, SDL_FLIP_NONE);
 					}
 				}
 
