@@ -20,7 +20,7 @@ SDL_Surface* fish_surfaces[5];
 SDL_Color color_white = { 255,255,255,255 };
 SDL_Color color_black = { 0,0,0,255 };
 
-int playerSpeed = 4;
+int playerSpeed = 2;
 
 typedef struct Rectangle {
 	float x;
@@ -133,31 +133,23 @@ int main(int argc, char* args[])
 					FishMoveAndDeSpawn(SCREEN_WIDTH, SCREEN_HEIGHT, 16);
 				}
 
-				// check for button presses
 				while (SDL_PollEvent(&e)) {
-					if (e.type == SDL_KEYDOWN)
-					{
-						if (keys[SDL_SCANCODE_P]) { if (PausedGame == 1) PausedGame = 0; else PausedGame = 1; }
-						if ((keys[SDL_SCANCODE_RETURN]) && GameOver == 1) { SetVars(SCREEN_WIDTH, SCREEN_HEIGHT); printf("restarting game"); }
-						if (keys[SDL_SCANCODE_RETURN] && playerDead == 1 && PausedGame == 0 && GameOver == 0) { playerDead = 0; playerPosition.x = (float)SCREEN_WIDTH / 2; playerPosition.y = (float)SCREEN_HEIGHT / 2; }
-					}
-
-					if (mainMenu == 1) {
-						if (keys[SDL_SCANCODE_S]) { mainMenu = 0; }
-					}
-
-					if (PausedGame == 0 && GameOver == 0) {
-						if (e.type == SDL_KEYDOWN)
-						{
-							if (keys[SDL_SCANCODE_RIGHT] && playerPosition.x < SCREEN_WIDTH && playerDead == 0) { playerPosition.x += playerSpeed; playerDirection = -1; }
-							if (keys[SDL_SCANCODE_LEFT] && playerPosition.x > 0 && playerDead == 0) { playerPosition.x -= playerSpeed; playerDirection = 1; }
-							if (keys[SDL_SCANCODE_UP] && playerPosition.y > 0 && playerDead == 0) playerPosition.y -= playerSpeed;
-							if (keys[SDL_SCANCODE_DOWN] && playerPosition.y < SCREEN_HEIGHT - 15 && playerDead == 0) playerPosition.y += playerSpeed;
-						}
-					}
-
 					if (e.type == SDL_QUIT)
 						quit = 1;
+				}
+
+				// check for button presses
+				if (keys[SDL_SCANCODE_P]) { if (PausedGame == 1) PausedGame = 0; else PausedGame = 1; }
+				if ((keys[SDL_SCANCODE_RETURN]) && GameOver == 1) { SetVars(SCREEN_WIDTH, SCREEN_HEIGHT); printf("restarting game"); }
+				if (keys[SDL_SCANCODE_RETURN] && playerDead == 1 && PausedGame == 0 && GameOver == 0) { playerDead = 0; playerPosition.x = (float)SCREEN_WIDTH / 2; playerPosition.y = (float)SCREEN_HEIGHT / 2; }
+				if (mainMenu == 1) {
+					if (keys[SDL_SCANCODE_S]) { mainMenu = 0; }
+				}
+				if (PausedGame == 0 && GameOver == 0) {
+					if (keys[SDL_SCANCODE_RIGHT] && playerPosition.x < SCREEN_WIDTH && playerDead == 0) { playerPosition.x += playerSpeed; playerDirection = -1; }
+					if (keys[SDL_SCANCODE_LEFT] && playerPosition.x > 0 && playerDead == 0) { playerPosition.x -= playerSpeed; playerDirection = 1; }
+					if (keys[SDL_SCANCODE_UP] && playerPosition.y > 0 && playerDead == 0) playerPosition.y -= playerSpeed;
+					if (keys[SDL_SCANCODE_DOWN] && playerPosition.y < SCREEN_HEIGHT - 15 && playerDead == 0) playerPosition.y += playerSpeed;
 				}
 
 				char UI_Score_t[255];

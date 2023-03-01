@@ -22,8 +22,8 @@ void SetShark(int bitten) {
     mrShark.active = 1;
     mrShark.objective = playerPosition;
 
-    if (bitten == 0) {
-        if (mrShark.position.x > playerPosition.x)
+    if (bitten == 0) { // set shark direction
+        if (mrShark.position.x > mrShark.objective.x)
             sharkDirection = 1;
         else
             sharkDirection = -1;
