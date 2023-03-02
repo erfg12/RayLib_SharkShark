@@ -1,3 +1,0 @@
-C:\Users\newgm\Documents\GitHub\RayLib_SharkShark\SDL\SharkShark\x64\Debug\SharkShark.vcxproj.MdMergeInputs.cache
-C:\Users\newgm\Documents\GitHub\RayLib_SharkShark\SDL\SharkShark\x64\Debug\SharkShark.vcxproj.cppwinrt_plat.cache
-C:\Users\newgm\Documents\GitHub\RayLib_SharkShark\SDL\SharkShark\x64\Debug\SharkShark.vcxproj.cppwinrt_comp.cache

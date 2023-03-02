@@ -6,3 +6,5 @@ build
 *.dll
 *.tlog
 *.ilk
+/x64/*
+/SharkShark/x64/*
