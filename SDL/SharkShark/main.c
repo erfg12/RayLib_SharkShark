@@ -7,11 +7,13 @@
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
 
+int sharkDeathAudioPlayed = 0;
+
 SDL_Texture* shark;
+SDL_Texture* shark_dead;
 SDL_Texture* lobster;
 SDL_Surface* lobster_surface;
 SDL_Texture* crab;
-SDL_Texture* shark_dead;
 SDL_Texture* seahorse;
 SDL_Texture* jellyfish;
 
@@ -22,8 +24,13 @@ SDL_Color color_white = { 255,255,255,255 };
 SDL_Color color_black = { 0,0,0,255 };
 
 Mix_Chunk* sharkSpawnSound = NULL;
+Mix_Chunk* sharkDeadSound = NULL;
 Mix_Chunk* fishBiteSound = NULL;
 Mix_Chunk* gameOverSound = NULL;
+Mix_Chunk* deadSound = NULL;
+Mix_Chunk* fishRankUp = NULL;
+
+Mix_Music* bgMusic = NULL;
 
 int playerSpeed = 2;
 
@@ -110,6 +117,11 @@ int main(int argc, char* args[])
 	sharkSpawnSound = Mix_LoadWAV("assets/audio/shark.wav");
 	fishBiteSound = Mix_LoadWAV("assets/audio/eat.wav");
 	gameOverSound = Mix_LoadWAV("assets/audio/gameover.wav");
+	deadSound = Mix_LoadWAV("assets/audio/dead.wav");
+	sharkDeadSound = Mix_LoadWAV("assets/audio/shark_dead.wav");
+	fishRankUp = Mix_LoadWAV("assets/audio/bigger.wav");
+
+	bgMusic = Mix_LoadMUS("assets/audio/bg_music.wav");
 
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) // Initialize SDL
 	{
@@ -131,6 +143,11 @@ int main(int argc, char* args[])
 				SDL_RenderClear(gRenderer);
 
 				struct Rectangle playerRec = { playerPosition.x, playerPosition.y, 16, 16 };
+
+				if (Mix_PlayingMusic() == 0)
+				{
+					Mix_PlayMusic(bgMusic, -1);
+				}
 
 				// these should flip depending on which direction shark is facing
 				struct Rectangle sharkTailRec = { mrShark.position.x + (64 / 2), mrShark.position.y, 64 / 2, 32 };
@@ -159,11 +176,11 @@ int main(int argc, char* args[])
 				if (mainMenu == 1) {
 					if (keys[SDL_SCANCODE_S]) { mainMenu = 0; }
 				}
-				if (PausedGame == 0 && GameOver == 0) {
-					if (keys[SDL_SCANCODE_RIGHT] && playerPosition.x < SCREEN_WIDTH && playerDead == 0) { playerPosition.x += playerSpeed; playerDirection = -1; }
-					if (keys[SDL_SCANCODE_LEFT] && playerPosition.x > 0 && playerDead == 0) { playerPosition.x -= playerSpeed; playerDirection = 1; }
-					if (keys[SDL_SCANCODE_UP] && playerPosition.y > 0 && playerDead == 0) playerPosition.y -= playerSpeed;
-					if (keys[SDL_SCANCODE_DOWN] && playerPosition.y < SCREEN_HEIGHT - 15 && playerDead == 0) playerPosition.y += playerSpeed;
+				if (PausedGame == 0 && GameOver == 0 && mainMenu == 0) {
+					if ((keys[SDL_SCANCODE_RIGHT] || keys[SDL_SCANCODE_D]) && playerPosition.x < SCREEN_WIDTH && playerDead == 0) { playerPosition.x += playerSpeed; playerDirection = -1; }
+					if ((keys[SDL_SCANCODE_LEFT] || keys[SDL_SCANCODE_A]) && playerPosition.x > 0 && playerDead == 0) { playerPosition.x -= playerSpeed; playerDirection = 1; }
+					if ((keys[SDL_SCANCODE_UP] || keys[SDL_SCANCODE_W]) && playerPosition.y > 0 && playerDead == 0) playerPosition.y -= playerSpeed;
+					if ((keys[SDL_SCANCODE_DOWN] || keys[SDL_SCANCODE_S]) && playerPosition.y < SCREEN_HEIGHT - 15 && playerDead == 0) playerPosition.y += playerSpeed;
 				}
 
 				char UI_Score_t[255];
@@ -195,7 +212,7 @@ int main(int argc, char* args[])
 				if (playerDead) {
 					SDL_Surface* UI_died = TTF_RenderText_Blended_Wrapped(font, "PLAYER DIED\n\nPRESS ENTER TO SPAWN", color_white, 800);
 					SDL_Texture* UI_died_text = SDL_CreateTextureFromSurface(gRenderer, UI_died);
-					SDL_Rect UI_died_renderQuad = { SCREEN_WIDTH / 2 - 50, SCREEN_HEIGHT / 2 - 50, UI_died->w, UI_died->h };
+					SDL_Rect UI_died_renderQuad = { SCREEN_WIDTH / 2 - 150, SCREEN_HEIGHT / 2 - 50, UI_died->w, UI_died->h };
 					SDL_RenderCopy(gRenderer, UI_died_text, NULL, &UI_died_renderQuad);
 				}
 				if (mainMenu == 1) {
@@ -207,9 +224,14 @@ int main(int argc, char* args[])
 
 				if (CheckCollisionRecs(playerRec, sharkBiteRec) && SharkHealth > 0) { // shark bit player
 					PlayerBit();
-					Mix_PlayChannel(-1, gameOverSound, 0);
+					if (lives == 0)
+						Mix_PlayChannel(-1, gameOverSound, 0);
+					else
+						Mix_PlayChannel(-1, deadSound, 0);
 				}
 				else if (CheckCollisionRecs(playerRec, sharkTailRec) && SharkHealth > 0) { // player bit shark on tail
+					if (sharkBitten != 1) 
+						Mix_PlayChannel(-1, fishBiteSound, 0);
 					sharkBitten = 1;
 				}
 
@@ -230,6 +252,7 @@ int main(int argc, char* args[])
 					SDL_Rect GoTo = { (int)mrShark.position.x, (int)mrShark.position.y, 64, 32 };
 
 					if (SharkHealth > 0) {
+						sharkDeathAudioPlayed = 0;
 						if (SharkHurtTimer % 10 && SharkHurtTimer > 0)
 							SDL_SetTextureColorMod(shark, 255, 0, 0);
 						else
@@ -242,7 +265,17 @@ int main(int argc, char* args[])
 						}
 					}
 					else {
+						if (sharkDeathAudioPlayed == 0) {
+							Mix_PlayChannel(-1, sharkDeadSound, 0);
+							sharkDeathAudioPlayed = 1;
+						}
 						SDL_SetTextureColorMod(shark, 0, 0, 0);
+						if (sharkDirection == 1) { // left
+							SDL_RenderCopyEx(gRenderer, shark_dead, NULL, &GoTo, 0, NULL, SDL_FLIP_NONE);
+						}
+						else { // right
+							SDL_RenderCopyEx(gRenderer, shark_dead, NULL, &GoTo, 0, NULL, SDL_FLIP_HORIZONTAL);
+						}
 					}
 				}
 
@@ -262,9 +295,11 @@ int main(int argc, char* args[])
 								creatures[i].active = 0;
 								score = score + 100;
 								Mix_PlayChannel(-1, fishBiteSound, 0);
+								Mix_PlayChannel(-1, fishBiteSound, 0);
 								if (score % 1000 == 0 && playerRank < 4) {
 									playerRank++;
 									//printf("************** PLAYER RANK IS NOW %i ***************\n", playerRank);
+									Mix_PlayChannel(-1, fishRankUp, 0);
 								}
 								else if (score % 1000 == 0 && playerRank >= 4) {
 									lives++;
@@ -273,7 +308,10 @@ int main(int argc, char* args[])
 							else {
 								//printf("**************** BITTEN BY A FISH. X:%f Y:%f ACTIVE:%i TYPE:%i ********************\n", creatures[i].position.x, creatures[i].position.y, creatures[i].active, creatures[i].type);
 								PlayerBit();
-								Mix_PlayChannel(-1, gameOverSound, 0);
+								if (lives == 0)
+									Mix_PlayChannel(-1, gameOverSound, 0);
+								else
+									Mix_PlayChannel(-1, deadSound, 0);
 							}
 						}
 
