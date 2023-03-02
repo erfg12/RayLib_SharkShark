@@ -1,5 +1,6 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include <SDL_mixer.h>
 #include <stdio.h>
 #include "..\..\shared.h"
 
@@ -19,6 +20,10 @@ SDL_Surface* fish_surfaces[5];
 
 SDL_Color color_white = { 255,255,255,255 };
 SDL_Color color_black = { 0,0,0,255 };
+
+Mix_Chunk* sharkSpawnSound = NULL;
+Mix_Chunk* fishBiteSound = NULL;
+Mix_Chunk* gameOverSound = NULL;
 
 int playerSpeed = 2;
 
@@ -44,34 +49,34 @@ int main(int argc, char* args[])
 	SDL_Window* window = SDL_CreateWindow("SharkShark", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN); // The window we'll be rendering to
 	SDL_Renderer* gRenderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC); // The window renderer
 
-	SDL_Surface* shark_surface = SDL_LoadBMP("assets/shark.bmp");
+	SDL_Surface* shark_surface = SDL_LoadBMP("assets/sprites/shark.bmp");
 	SDL_SetColorKey(shark_surface, SDL_TRUE, SDL_MapRGB(shark_surface->format, 0xFF, 0x0, 0xFF));
 	shark = SDL_CreateTextureFromSurface(gRenderer, shark_surface);
-	SDL_Surface* shark_dead_surface = SDL_LoadBMP("assets/shark_dead.bmp");
+	SDL_Surface* shark_dead_surface = SDL_LoadBMP("assets/sprites/shark_dead.bmp");
 	SDL_SetColorKey(shark_dead_surface, SDL_TRUE, SDL_MapRGB(shark_dead_surface->format, 0xFF, 0x0, 0xFF));
 	shark_dead = SDL_CreateTextureFromSurface(gRenderer, shark_dead_surface);
-	SDL_Surface* seahorse_surface = SDL_LoadBMP("assets/seahorse.bmp");
+	SDL_Surface* seahorse_surface = SDL_LoadBMP("assets/sprites/seahorse.bmp");
 	SDL_SetColorKey(seahorse_surface, SDL_TRUE, SDL_MapRGB(seahorse_surface->format, 0xFF, 0x0, 0xFF));
 	seahorse = SDL_CreateTextureFromSurface(gRenderer, seahorse_surface);
-	SDL_Surface* lobster_surface = SDL_LoadBMP("assets/lobster.bmp");
+	SDL_Surface* lobster_surface = SDL_LoadBMP("assets/sprites/lobster.bmp");
 	SDL_SetColorKey(lobster_surface, SDL_TRUE, SDL_MapRGB(lobster_surface->format, 0xFF, 0x0, 0xFF));
 	lobster = SDL_CreateTextureFromSurface(gRenderer, lobster_surface);
-	SDL_Surface* crab_surface = SDL_LoadBMP("assets/crab.bmp");
+	SDL_Surface* crab_surface = SDL_LoadBMP("assets/sprites/crab.bmp");
 	SDL_SetColorKey(crab_surface, SDL_TRUE, SDL_MapRGB(crab_surface->format, 0xFF, 0x0, 0xFF));
 	crab = SDL_CreateTextureFromSurface(gRenderer, crab_surface);
-	fish_surfaces[0] = SDL_LoadBMP("assets/rank1.bmp");
+	fish_surfaces[0] = SDL_LoadBMP("assets/sprites/rank1.bmp");
 	SDL_SetColorKey(fish_surfaces[0], SDL_TRUE, SDL_MapRGB(fish_surfaces[0]->format, 0xFF, 0x0, 0xFF));
 	fish[0] = SDL_CreateTextureFromSurface(gRenderer, fish_surfaces[0]);
-	fish_surfaces[1] = SDL_LoadBMP("assets/rank2.bmp");
+	fish_surfaces[1] = SDL_LoadBMP("assets/sprites/rank2.bmp");
 	SDL_SetColorKey(fish_surfaces[1], SDL_TRUE, SDL_MapRGB(fish_surfaces[1]->format, 0xFF, 0x0, 0xFF));
 	fish[1] = SDL_CreateTextureFromSurface(gRenderer, fish_surfaces[1]);
-	fish_surfaces[2] = SDL_LoadBMP("assets/rank3.bmp");
+	fish_surfaces[2] = SDL_LoadBMP("assets/sprites/rank3.bmp");
 	SDL_SetColorKey(fish_surfaces[2], SDL_TRUE, SDL_MapRGB(fish_surfaces[2]->format, 0xFF, 0x0, 0xFF));
 	fish[2] = SDL_CreateTextureFromSurface(gRenderer, fish_surfaces[2]);
-	fish_surfaces[3] = SDL_LoadBMP("assets/rank4.bmp");
+	fish_surfaces[3] = SDL_LoadBMP("assets/sprites/rank4.bmp");
 	SDL_SetColorKey(fish_surfaces[3], SDL_TRUE, SDL_MapRGB(fish_surfaces[3]->format, 0xFF, 0x0, 0xFF));
 	fish[3] = SDL_CreateTextureFromSurface(gRenderer, fish_surfaces[3]);
-	fish_surfaces[4] = SDL_LoadBMP("assets/rank5.bmp");
+	fish_surfaces[4] = SDL_LoadBMP("assets/sprites/rank5.bmp");
 	SDL_SetColorKey(fish_surfaces[4], SDL_TRUE, SDL_MapRGB(fish_surfaces[4]->format, 0xFF, 0x0, 0xFF));
 	fish[4] = SDL_CreateTextureFromSurface(gRenderer, fish_surfaces[4]);
 
@@ -97,7 +102,16 @@ int main(int argc, char* args[])
 
 	TTF_Font* font = TTF_OpenFont("assets/pixantiqua.ttf", 25);
 
-	if (SDL_Init(SDL_INIT_VIDEO) < 0) // Initialize SDL
+	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
+	{
+		printf("SDL_mixer could not initialize! SDL_mixer Error: %s\n", Mix_GetError());
+	}
+
+	sharkSpawnSound = Mix_LoadWAV("assets/audio/shark.wav");
+	fishBiteSound = Mix_LoadWAV("assets/audio/eat.wav");
+	gameOverSound = Mix_LoadWAV("assets/audio/gameover.wav");
+
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) // Initialize SDL
 	{
 		printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
 	}
@@ -193,6 +207,7 @@ int main(int argc, char* args[])
 
 				if (CheckCollisionRecs(playerRec, sharkBiteRec) && SharkHealth > 0) { // shark bit player
 					PlayerBit();
+					Mix_PlayChannel(-1, gameOverSound, 0);
 				}
 				else if (CheckCollisionRecs(playerRec, sharkTailRec) && SharkHealth > 0) { // player bit shark on tail
 					sharkBitten = 1;
@@ -208,6 +223,9 @@ int main(int argc, char* args[])
 				}
 
 				// draw shark
+				if (SharkSpawnTimer >= 900) {
+					Mix_PlayChannel(-1, sharkSpawnSound, 0);
+				}
 				if (mrShark.active) {
 					SDL_Rect GoTo = { (int)mrShark.position.x, (int)mrShark.position.y, 64, 32 };
 
@@ -243,6 +261,7 @@ int main(int argc, char* args[])
 								creatures[i].position.x = -10;
 								creatures[i].active = 0;
 								score = score + 100;
+								Mix_PlayChannel(-1, fishBiteSound, 0);
 								if (score % 1000 == 0 && playerRank < 4) {
 									playerRank++;
 									//printf("************** PLAYER RANK IS NOW %i ***************\n", playerRank);
@@ -254,6 +273,7 @@ int main(int argc, char* args[])
 							else {
 								//printf("**************** BITTEN BY A FISH. X:%f Y:%f ACTIVE:%i TYPE:%i ********************\n", creatures[i].position.x, creatures[i].position.y, creatures[i].active, creatures[i].type);
 								PlayerBit();
+								Mix_PlayChannel(-1, gameOverSound, 0);
 							}
 						}
 
