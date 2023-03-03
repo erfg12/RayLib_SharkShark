@@ -151,7 +151,7 @@ void SharkRoam(float ScreenWidth, float ScreenHeight) {
 void FishSpawn(float ScreenWidth, float ScreenHeight) {
     int height = 40;
     //if (ScreenHeight < 600) height = 20;
-    if (FishSpawnTimer >= 120) {
+    if (FishSpawnTimer >= 60) {
         int pickCreature = 0;
         pickCreature = GetRandomNum(0, 26);
         if (!creatures[pickCreature].active) {

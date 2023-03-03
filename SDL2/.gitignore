@@ -1,0 +1,10 @@
+build
+.DS_Store
+.vs
+*.pdb
+*.exe
+*.dll
+*.tlog
+*.ilk
+/x64/*
+/SharkShark/x64/*
