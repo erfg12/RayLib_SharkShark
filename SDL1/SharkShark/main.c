@@ -344,7 +344,9 @@ int main(int argc, char* args[])
 							}
 						}
 						else if (creatures[i].type == 8) {
-							SDL_BlitSurface(jellyfish, &tmp, screen, &GoTo);
+							SDL_Rect GoToJelly = { creatures[i].position.x, creatures[i].position.y, 48, 48 };
+							SDL_Rect tmpJelly = { animChange * 48, 0, 48, 48 };
+							SDL_BlitSurface(jellyfish, &tmpJelly, screen, &GoToJelly);
 						}
 					}
 				}

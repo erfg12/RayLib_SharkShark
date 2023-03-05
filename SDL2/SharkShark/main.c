@@ -316,7 +316,7 @@ int main(int argc, char* args[])
 						}
 
 						SDL_Rect GoTo = { creatures[i].position.x, creatures[i].position.y, 16, 16 };
-						SDL_Rect tmp = { animChange * 16, 0, ((animChange + 1) * 16), GoTo.y };
+						SDL_Rect tmp = { animChange * 16, 0, 16, 16 };
 						if (creatures[i].type == 5) {
 							SDL_RenderCopyEx(gRenderer, crab, &tmp, &GoTo, 0, NULL, SDL_FLIP_NONE);
 						}
@@ -341,8 +341,11 @@ int main(int argc, char* args[])
 							else
 								SDL_RenderCopyEx(gRenderer, seahorse, &tmp, &GoTo, 0, NULL, SDL_FLIP_NONE);
 						}
-						else if (creatures[i].type == 8)
-							SDL_RenderCopyEx(gRenderer, jellyfish, &tmp, &GoTo, 0, NULL, SDL_FLIP_NONE);
+						else if (creatures[i].type == 8) {
+							SDL_Rect GoToJelly = { creatures[i].position.x, creatures[i].position.y, 48, 48 };
+							SDL_Rect tmpJelly = { animChange * 48, 0, 48, 48 };
+							SDL_RenderCopyEx(gRenderer, jellyfish, &tmpJelly, &GoToJelly, 0, NULL, SDL_FLIP_NONE);
+						}
 					}
 				}
 
