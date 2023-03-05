@@ -3,8 +3,8 @@ build
 .vs
 *.pdb
 *.exe
-*.dll
 *.tlog
 *.ilk
 /x64/*
 /SharkShark/x64/*
+/packages/*

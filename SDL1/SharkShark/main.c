@@ -32,12 +32,6 @@ Mix_Music* bgMusic = NULL;
 
 int playerSpeed = 2;
 
-//FILE* __cdecl __iob_func(void)
-//{
-//	FILE _iob[] = { *stdin, *stdout, *stderr };
-//	return _iob;
-//}
-
 #ifdef main
 #undef main
 #endif
@@ -197,23 +191,23 @@ int main(int argc, char* args[])
 				SDL_BlitSurface(UI_Lives, NULL, screen, &UI_Lives_renderQuad);
 				if (GameOver) {
 					char UI_gameover_t[255];
-					sprintf_s(UI_gameover_t, 255, "GAME OVER!\n\nYOUR SCORE: %4i\n\nPRESS ENTER TO RESTART GAME", score);
+					sprintf_s(UI_gameover_t, 255, "GAME OVER! - YOUR SCORE: %4i", score);
 					SDL_Surface* UI_gameover = TTF_RenderText_Solid(font, UI_gameover_t, color_white, 800);
-					SDL_Rect UI_gameover_renderQuad = { SCREEN_WIDTH / 2 - 100, SCREEN_HEIGHT / 2 - 100, UI_gameover->w, UI_gameover->h };
+					SDL_Rect UI_gameover_renderQuad = { SCREEN_WIDTH / 2 - 200, SCREEN_HEIGHT / 2 - 200, UI_gameover->w, UI_gameover->h };
 					SDL_BlitSurface(UI_gameover, NULL, screen, &UI_gameover_renderQuad);
 				}
 				if (PausedGame) {
-					SDL_Surface* UI_pause = TTF_RenderText_Solid(font, "PAUSED\n\nPRESS P TO RESUME", color_white, 800);
+					SDL_Surface* UI_pause = TTF_RenderText_Solid(font, "PAUSED - PRESS P TO RESUME", color_white, 800);
 					SDL_Rect UI_pause_renderQuad = { SCREEN_WIDTH / 2 - 50, SCREEN_HEIGHT / 2 - 50, UI_pause->w, UI_pause->h };
 					SDL_BlitSurface(UI_pause, NULL, screen, &UI_pause_renderQuad);
 				}
 				if (playerDead) {
-					SDL_Surface* UI_died = TTF_RenderText_Solid(font, "PLAYER DIED\n\nPRESS ENTER TO SPAWN", color_white, 800);
-					SDL_Rect UI_died_renderQuad = { SCREEN_WIDTH / 2 - 150, SCREEN_HEIGHT / 2 - 50, UI_died->w, UI_died->h };
+					SDL_Surface* UI_died = TTF_RenderText_Solid(font, "PLAYER DIED - PRESS ENTER TO SPAWN", color_white, 800);
+					SDL_Rect UI_died_renderQuad = { SCREEN_WIDTH / 2 - 250, SCREEN_HEIGHT / 2 - 50, UI_died->w, UI_died->h };
 					SDL_BlitSurface(UI_died, NULL, screen, &UI_died_renderQuad);
 				}
 				if (mainMenu == 1) {
-					SDL_Surface* UI_mainmenu = TTF_RenderText_Blended(font, "SHARK! SHARK!\nre-created by Jacob Fliss\n\n[S]tart Game\n[Q]uit Game", color_white, 800);
+					SDL_Surface* UI_mainmenu = TTF_RenderText_Blended(font, "SHARK! SHARK! - [S]tart Game", color_white, 800);
 					SDL_Rect UI_mainmenu_renderQuad = { SCREEN_WIDTH / 2 - 150, SCREEN_HEIGHT / 2 - 90, UI_mainmenu->w, UI_mainmenu->h };
 					SDL_BlitSurface(UI_mainmenu, NULL, screen, &UI_mainmenu_renderQuad);
 				}
@@ -234,10 +228,12 @@ int main(int argc, char* args[])
 				// draw player fish
 				SDL_Rect PosSize = { (int)playerPosition.x, (int)playerPosition.y, 16, 16 };
 				if (playerDirection == 1) { // left
-					SDL_BlitSurface(fish[playerRank], NULL, screen, &PosSize);
+					SDL_Rect fish_left = { 16, 0, 32, PosSize.y };
+					SDL_BlitSurface(fish[playerRank], &fish_left, screen, &PosSize);
 				}
 				else { // right
-					SDL_BlitSurface(fish[playerRank], NULL, screen, &PosSize);
+					SDL_Rect fish_right = { 0, 0, 16, PosSize.y };
+					SDL_BlitSurface(fish[playerRank], &fish_right, screen, &PosSize);
 				}
 
 				// draw shark
@@ -256,10 +252,12 @@ int main(int argc, char* args[])
 							// color red eyes
 						}
 						if (sharkDirection == 1) { // left
-							SDL_BlitSurface(shark, NULL, screen, &GoTo);
+							SDL_Rect shark_left = { 0, 0, 64, PosSize.y };
+							SDL_BlitSurface(shark, &shark_left, screen, &GoTo);
 						}
 						else { // right
-							SDL_BlitSurface(shark, NULL, screen, &GoTo);
+							SDL_Rect shark_right = { 64, 0, 128, PosSize.y };
+							SDL_BlitSurface(shark, &shark_right, screen, &GoTo);
 						}
 					}
 					else {
@@ -314,38 +312,39 @@ int main(int argc, char* args[])
 						}
 
 						SDL_Rect GoTo = { creatures[i].position.x, creatures[i].position.y, 16, 16 };
-						SDL_Rect tmp = { animChange * 16, 0, ((animChange + 1) * 16), GoTo.y };
+						SDL_Rect tmp = { animChange * 16, 0, 16, 16 }; // 2 frames of animation
+						SDL_Rect tmp2 = { (animChange + 2) * 16, 0, 16, 16 }; // 2 animations + 2 directions
 						if (creatures[i].type == 5) {
-							SDL_BlitSurface(crab, NULL, screen, &GoTo);
+							SDL_BlitSurface(crab, &tmp, screen, &GoTo);
 						}
 						else if (creatures[i].type == 6) {
-							
-							SDL_Rect tmp = { animChange * 16, 0, ((animChange + 1) * 16), GoTo.y };
-							if (creatures[i].origin.x <= 20) {
-								SDL_BlitSurface(lobster, NULL, screen, &GoTo);
+							if (creatures[i].origin.x <= 20) { // move right
+								SDL_BlitSurface(lobster, &tmp2, screen, &GoTo);
 							}
-							else {
-								SDL_BlitSurface(lobster, NULL, screen, &GoTo);
+							else { // move left
+								SDL_BlitSurface(lobster, &tmp, screen, &GoTo);
 							}
 						}
 						else if (creatures[i].type <= 4 && creatures[i].type >= 0) {
 							if (creatures[i].origin.x <= 20) {
-								SDL_BlitSurface(fish[creatures[i].type], NULL, screen, &GoTo); // RIGHT
+								SDL_Rect fish_right = { 0, 0, 16, GoTo.y };
+								SDL_BlitSurface(fish[creatures[i].type], &fish_right, screen, &GoTo); // RIGHT
 							}
 							else {
-								SDL_BlitSurface(fish[creatures[i].type], NULL, screen, &GoTo); // LEFT
+								SDL_Rect fish_left = { 16, 0, 32, GoTo.y };
+								SDL_BlitSurface(fish[creatures[i].type], &fish_left, screen, &GoTo); // LEFT
 							}
 						}
 						else if (creatures[i].type == 7) {
-							if (creatures[i].origin.x <= 20) {
-								SDL_BlitSurface(seahorse, NULL, screen, &GoTo);
+							if (creatures[i].origin.x <= 20) { // move right
+								SDL_BlitSurface(seahorse, &tmp, screen, &GoTo);
 							}
-							else {
-								SDL_BlitSurface(seahorse, NULL, screen, &GoTo);
+							else { // move left
+								SDL_BlitSurface(seahorse, &tmp2, screen, &GoTo);
 							}
 						}
 						else if (creatures[i].type == 8) {
-							SDL_BlitSurface(jellyfish, NULL, screen, &GoTo);
+							SDL_BlitSurface(jellyfish, &tmp, screen, &GoTo);
 						}
 					}
 				}
