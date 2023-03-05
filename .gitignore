@@ -5,7 +5,6 @@ nxdk/*
 nxdk/game/bin
 *.obj
 *.d
-*.lib
 *.exe
 *.iso
 *.xbe
