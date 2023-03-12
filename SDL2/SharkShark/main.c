@@ -222,14 +222,14 @@ int main(int argc, char* args[])
 					SDL_RenderCopy(gRenderer, UI_mainmenu_text, NULL, &UI_mainmenu_renderQuad);
 				}
 
-				if (CheckCollisionRecs(playerRec, sharkBiteRec) && SharkHealth > 0) { // shark bit player
+				if (CheckCollisionRecs(playerRec, sharkBiteRec) && SharkHealth > 0 && playerDead == 0) { // shark bit player
 					PlayerBit();
 					if (lives == 0)
 						Mix_PlayChannel(-1, gameOverSound, 0);
 					else
 						Mix_PlayChannel(-1, deadSound, 0);
 				}
-				else if (CheckCollisionRecs(playerRec, sharkTailRec) && SharkHealth > 0) { // player bit shark on tail
+				else if (CheckCollisionRecs(playerRec, sharkTailRec) && SharkHealth > 0 && playerDead == 0) { // player bit shark on tail
 					if (sharkBitten != 1) 
 						Mix_PlayChannel(-1, fishBiteSound, 0);
 					sharkBitten = 1;
