@@ -23,38 +23,38 @@ typedef struct SeaCreature {
     int jump;
 } SeaCreature;
 
-Vec2 playerPosition;
-int lives;
-int playerRank;
-int playerDirection; // 1 = left, -1 = right
-int FishSpawnTimer;
-Shark mrShark;
-int sharkBounces;
-int sharkMaxBounces;
-int score;
-int SharkSpawnTimer;
-int SharkHurtTimer;
-int SharkHealth;
-int LeftClick; // bool
-int sharkDirection; // 1 = left, -1 = right
-int PausedGame;
-int mainMenu;
-int GameOver;
-int playerDead;
-int sharkBitten; // bool
-SeaCreature creatures[27];
+extern Vec2 playerPosition;
+extern int lives;
+extern int playerRank;
+extern int playerDirection; // 1 = left, -1 = right
+extern int FishSpawnTimer;
+extern Shark mrShark;
+extern int sharkBounces;
+extern int sharkMaxBounces;
+extern int score;
+extern int SharkSpawnTimer;
+extern int SharkHurtTimer;
+extern int SharkHealth;
+extern int LeftClick; // bool
+extern int sharkDirection; // 1 = left, -1 = right
+extern int PausedGame;
+extern int mainMenu;
+extern int GameOver;
+extern int playerDead;
+extern int sharkBitten; // bool
+extern SeaCreature creatures[27];
 extern int creatureRank[9];
 extern float creatureSpeed[9];
 
-int GetRandomNum(int min, int max);
-void SetShark(int bitten);
-void SetFish();
-void SetVars(float ScreenWidth, float ScreenHeight);
-void HurtShark();
-void SharkRoam(float ScreenWidth, float ScreenHeight);
-void FishSpawn(float ScreenWidth, float ScreenHeight);
-void CrustJump(int CreatureID, float ScreenHeight, int height);
-void FishMoveAndDeSpawn(float ScreenWidth, float ScreenHeight, int CrustHeight);
-void PlayerBit();
+extern int GetRandomNum(int min, int max);
+extern void SetShark(int bitten);
+extern void SetFish();
+extern void SetVars(float ScreenWidth, float ScreenHeight);
+extern void HurtShark();
+extern void SharkRoam(float ScreenWidth, float ScreenHeight);
+extern void FishSpawn(float ScreenWidth, float ScreenHeight);
+extern void CrustJump(int CreatureID, float ScreenHeight, int height);
+extern void FishMoveAndDeSpawn(float ScreenWidth, float ScreenHeight, int CrustHeight);
+extern void PlayerBit();
 
 #endif

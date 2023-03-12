@@ -8,6 +8,27 @@
 float creatureSpeed[9] = { 1, 1.3, 1.5, 1.7, 2, 0.8, 0.8, 2, 1.3 }; // use SC type to get speed
 int creatureRank[9] = { 1, 2, 3, 4, 5, 5, 5, 5, 6 }; // use SC type to get rank. Rank determines what a creature can eat. (jellyfish are immune)
 
+Vec2 playerPosition;
+int lives;
+int playerRank;
+int playerDirection; // 1 = left, -1 = right
+int FishSpawnTimer;
+Shark mrShark;
+int sharkBounces;
+int sharkMaxBounces;
+int score;
+int SharkSpawnTimer;
+int SharkHurtTimer;
+int SharkHealth;
+int LeftClick; // bool
+int sharkDirection; // 1 = left, -1 = right
+int PausedGame;
+int mainMenu;
+int GameOver;
+int playerDead;
+int sharkBitten; // bool
+SeaCreature creatures[27];
+
 int GetRandomNum(int min, int max)
 {
     int range, result, cutoff;
