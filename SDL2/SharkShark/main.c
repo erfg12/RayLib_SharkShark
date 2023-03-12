@@ -1,8 +1,15 @@
+#if defined(__APPLE__) || (defined(__linux__) && !defined(ANDROID))
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_mixer.h>
+#else
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <SDL_mixer.h>
+#endif
+
 #include <stdio.h>
-#include "..\..\shared.h"
+#include "../../shared.h"
 
 #if __EMSCRIPTEN__
 #include <emscripten.h>
