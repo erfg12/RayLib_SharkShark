@@ -21,6 +21,7 @@ const int SCREEN_HEIGHT = 480;
 int sharkDeathAudioPlayed = 0;
 int quit = 0;
 const Uint8* keys;
+SDL_Event e;
 
 SDL_Texture* shark;
 SDL_Texture* shark_dead;
@@ -68,19 +69,19 @@ int CheckCollisionRecs(Rectangle r1, Rectangle r2) {
 }
 
 void game_loop() {
-	SDL_Event e;
+	SDL_PumpEvents();
 
-	Uint32 ticks = SDL_GetTicks();
+	while (SDL_PollEvent(&e)) {
+		if (e.type == SDL_QUIT)
+			quit = 1;
+	}
 
 	SDL_SetRenderDrawColor(gRenderer, 0, 0, 255, 255); // blue like water
 	SDL_RenderClear(gRenderer);
 
-	struct Rectangle playerRec = { playerPosition.x, playerPosition.y, 16, 16 };
+	Uint32 ticks = SDL_GetTicks();
 
-	if (Mix_PlayingMusic() == 0)
-	{
-		Mix_PlayMusic(bgMusic, -1);
-	}
+	struct Rectangle playerRec = { playerPosition.x, playerPosition.y, 16, 16 };
 
 	// these should flip depending on which direction shark is facing
 	struct Rectangle sharkTailRec = { mrShark.position.x + (64 / 2), mrShark.position.y, 64 / 2, 32 };
@@ -95,11 +96,6 @@ void game_loop() {
 		SharkRoam(SCREEN_WIDTH, SCREEN_HEIGHT);
 		FishSpawn(SCREEN_WIDTH, SCREEN_HEIGHT);
 		FishMoveAndDeSpawn(SCREEN_WIDTH, SCREEN_HEIGHT, 16);
-	}
-
-	while (SDL_PollEvent(&e)) {
-		if (e.type == SDL_QUIT)
-			quit = 1;
 	}
 
 	// check for button presses
@@ -149,7 +145,7 @@ void game_loop() {
 		SDL_RenderCopy(gRenderer, UI_died_text, NULL, &UI_died_renderQuad);
 	}
 	if (mainMenu == 1) {
-		SDL_Surface* UI_mainmenu = TTF_RenderText_Blended_Wrapped(font, "SHARK! SHARK!\nre-created by Jacob Fliss\n\n[S]tart Game\n[Q]uit Game", color_white, 800);
+		SDL_Surface* UI_mainmenu = TTF_RenderText_Blended_Wrapped(font, "SHARK! SHARK!\nre-created by Jacob Fliss\n\n[S]tart Game", color_white, 800);
 		SDL_Texture* UI_mainmenu_text = SDL_CreateTextureFromSurface(gRenderer, UI_mainmenu);
 		SDL_Rect UI_mainmenu_renderQuad = { SCREEN_WIDTH / 2 - 150, SCREEN_HEIGHT / 2 - 90, UI_mainmenu->w, UI_mainmenu->h };
 		SDL_RenderCopy(gRenderer, UI_mainmenu_text, NULL, &UI_mainmenu_renderQuad);
@@ -281,12 +277,13 @@ void game_loop() {
 			}
 		}
 	}
-
+	
 	SDL_RenderPresent(gRenderer);
 }
 
 int main(int argc, char* args[])
 {
+	//SDL_SetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT, "#canvas");
 	SDL_Window* window = SDL_CreateWindow("SharkShark", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN); // The window we'll be rendering to
 	gRenderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC); // The window renderer
 
@@ -367,8 +364,12 @@ int main(int argc, char* args[])
 			printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
 		else
 		{
-			SDL_Event e;
 			SetVars(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+			if (Mix_PlayingMusic() == 0)
+			{
+				Mix_PlayMusic(bgMusic, -1);
+			}
 
 #ifdef __EMSCRIPTEN__
 			emscripten_set_main_loop(game_loop, 0, 1);

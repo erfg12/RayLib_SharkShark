@@ -56,7 +56,7 @@ void SetShark(int bitten) {
     float sideY = (mrShark.objective.y - mrShark.position.y) / module;
 
     mrShark.speed = (Vec2){ sideX, sideY };
-    printf("DEBUG: Resetting shark\n");
+    //printf("DEBUG: Resetting shark\n");
 }
 
 void SetFish() {
@@ -107,7 +107,7 @@ void SetVars(float ScreenWidth, float ScreenHeight) {
 
 void HurtShark() {
     if (!sharkBitten || SharkHealth <= 0) return;
-    printf("DEBUG: Shark was bitten. Timer: %i\n", SharkHurtTimer);
+    //printf("DEBUG: Shark was bitten. Timer: %i\n", SharkHurtTimer);
     mrShark.position = (Vec2){ mrShark.position.x, mrShark.position.y };
     mrShark.objective = (Vec2){ mrShark.position.x, mrShark.position.y }; // pause for a sec
     if (SharkHurtTimer >= 60) {
@@ -164,7 +164,7 @@ void SharkRoam(float ScreenWidth, float ScreenHeight) {
             mrShark.position = (Vec2){ ScreenWidth - 20, 20 };
             SharkSpawnTimer = 0;
         }
-        printf("DEBUG: SharkSpawnTimer: %i\n", SharkSpawnTimer);
+        //printf("DEBUG: SharkSpawnTimer: %i\n", SharkSpawnTimer);
         SharkSpawnTimer++;
     }
 }
@@ -186,7 +186,7 @@ void FishSpawn(float ScreenWidth, float ScreenHeight) {
             if (creatures[pickCreature].type == 5 || creatures[pickCreature].type == 6) pickHeight = (float)ScreenHeight - height;
             creatures[pickCreature].origin = (Vec2){ ps,pickHeight };
             creatures[pickCreature].position = (Vec2){ ps,pickHeight };
-            printf("DEBUG: Spawning Fish coords x:%f y:%f type:%i active:%i\n", ps, pickHeight, creatures[pickCreature].type, creatures[pickCreature].active);
+            //printf("DEBUG: Spawning Fish coords x:%f y:%f type:%i active:%i\n", ps, pickHeight, creatures[pickCreature].type, creatures[pickCreature].active);
         }
         FishSpawnTimer = 0;
     }
