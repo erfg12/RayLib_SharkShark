@@ -235,6 +235,7 @@ void FishMoveAndDeSpawn(float ScreenWidth, float ScreenHeight, int CrustHeight) 
 }
 
 void PlayerBit() {
+    if (playerDead) return;
     lives--;
     playerPosition = (Vec2){ -200,-200 };
     playerDead = 1;

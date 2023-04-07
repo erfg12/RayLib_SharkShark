@@ -146,7 +146,7 @@ int main(void)
                 
                 SharkRoam(screenWidth, screenHeight);
                 FishSpawn(screenWidth, screenHeight);
-                FishMoveAndDeSpawn(screenWidth, screenHeight, 40);
+                FishMoveAndDeSpawn(screenWidth, screenHeight, 20);
             }
 
             // DRAWING
@@ -168,9 +168,9 @@ int main(void)
             // draw player fish
             Vec2 PlayerGoTo = { playerPosition.x, playerPosition.y };
             if (playerDirection == 1) { // left
-                masked_blit(fish[playerRank], screen2, 0, 0, playerPosition.x, playerPosition.y, 16, 16);
-            } else { // right
                 masked_blit(fish[playerRank], screen2, 16, 0, playerPosition.x, playerPosition.y, 16, 16);
+            } else { // right
+                masked_blit(fish[playerRank], screen2, 0, 0, playerPosition.x, playerPosition.y, 16, 16);
             }
         
             // draw shark
